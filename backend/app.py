@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return "Backend Face Recognition aktif 🚀"
+    return "Backend Aktif 🚀"
 
 DB_CONFIG = {
     'host': 'localhost',
@@ -61,7 +61,7 @@ def log_attendance():
     try:
         cursor = conn.cursor()
         
-        sql = "INSERT INTO mahasiswa (nama, nim, masuk) VALUES (%s, %s, %s)"
+        sql = "INSERT INTO log_masuk (nama, nim, masuk) VALUES (%s, %s, %s)"
         val = (name, nim, timestamp)
         cursor.execute(sql, val)
         conn.commit()
