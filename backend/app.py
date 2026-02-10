@@ -1,80 +1,79 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import mysql.connector
 from datetime import datetime
 import json
 import os
 
 app = Flask(__name__)
-
-@app.route('/')
-def index():
-    return "Backend Aktif 🚀"
+CORS(app) 
 
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': '', 
-    'database': 'db_face_recognition' 
+    'password': '',
+    'database': 'db_face_recognition'
 }
 
 MAPPING_FILE = os.path.join(os.path.dirname(__file__), 'nim_mapping.json')
 
 def load_nim_mapping():
     if not os.path.exists(MAPPING_FILE):
-        print(f"Warning: Mapping file {MAPPING_FILE} not found. Using empty mapping.")
         return {}
-    try:
-        with open(MAPPING_FILE, 'r') as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        print(f"Error: Failed to decode JSON from {MAPPING_FILE}.")
-        return {}
-
-NIM_MAPPING = load_nim_mapping()
+    with open(MAPPING_FILE, 'r') as f:
+        return json.load(f)
 
 def get_db_connection():
-    try:
-        conn = mysql.connector.connect(**DB_CONFIG)
-        return conn
-    except mysql.connector.Error as err:
-        print(f"Error connecting to database: {err}")
-        return None
+    return mysql.connector.connect(**DB_CONFIG)
+
+@app.route('/')
+def index():
+    return "Backend Aktif 🚀"
 
 @app.route('/log_attendance', methods=['POST'])
 def log_attendance():
-    current_mapping = load_nim_mapping()
-    
     data = request.get_json()
-    
-    if not data or 'name' not in data:
-        return jsonify({'error': 'Name is required'}), 400
+    name = data.get('name')
+    timestamp = data.get('timestamp', datetime.now())
 
-    name = data['name']
-    timestamp = data.get('timestamp', datetime.now().isoformat())
-    
-    nim = current_mapping.get(name, "UNKNOWN")
+    mapping = load_nim_mapping()
+    nim = mapping.get(name, "UNKNOWN")
 
     conn = get_db_connection()
-    if conn is None:
-        return jsonify({'error': 'Database connection failed'}), 500
+    cursor = conn.cursor()
 
-    try:
-        cursor = conn.cursor()
-        
-        sql = "INSERT INTO log_masuk (nama, nim, masuk) VALUES (%s, %s, %s)"
-        val = (name, nim, timestamp)
-        cursor.execute(sql, val)
-        conn.commit()
-        
-        cursor.close()
-        conn.close()
-        
-        return jsonify({'message': f'Attendance logged for {name}', 'nim': nim}), 201
-    except mysql.connector.Error as err:
-        return jsonify({'error': f'Database error: {err}'}), 500
-    finally:
-        if conn and conn.is_connected():
-            conn.close()
+    sql = """
+        INSERT INTO log_masuk (nama, nim, masuk)
+        VALUES (%s, %s, %s)
+    """
+    cursor.execute(sql, (name, nim, timestamp))
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify({
+        "message": "Attendance logged",
+        "nama": name,
+        "nim": nim
+    }), 201
+
+@app.route('/monitoring', methods=['GET'])
+def get_monitoring():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT id, nama, nim, masuk
+        FROM log_masuk
+        ORDER BY masuk DESC
+    """)
+    data = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return jsonify(data)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)
