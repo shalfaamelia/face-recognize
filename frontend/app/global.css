@@ -1,9 +1,143 @@
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  margin: 0;
-  background: #f5f6fa;
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+* {
+  box-sizing: border-box;
 }
 
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  margin: 0;
+  background: #f5f7fb;
+  color: #1a2035;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #d0d7e3;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #b0bac8;
+}
+
+/* Page title */
 h1 {
-  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a2035;
+  margin: 0 0 1.5rem 0;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a2035;
+  letter-spacing: -0.01em;
+}
+
+/* PrimeReact overrides */
+.p-card {
+  border-radius: 14px !important;
+  border: 1px solid #e8ecf0 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+
+.p-datatable .p-datatable-header {
+  border-radius: 14px 14px 0 0;
+  border: 1px solid #e8ecf0;
+  border-bottom: none;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background: #f8faff;
+  color: #5a6a85;
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-color: #e8ecf0;
+}
+
+.p-datatable .p-datatable-tbody > tr {
+  transition: background 0.12s;
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  background: #f5f7ff !important;
+}
+
+.p-button.p-button-primary {
+  background: linear-gradient(135deg, #4a6cf7 0%, #6a85f5 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(74,108,247,0.3) !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  transition: all 0.15s ease !important;
+}
+
+.p-button.p-button-primary:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 16px rgba(74,108,247,0.4) !important;
+}
+
+.p-inputtext {
+  border-radius: 10px !important;
+  border-color: #e0e6ef !important;
+  transition: all 0.15s ease !important;
+}
+
+.p-inputtext:focus {
+  border-color: #4a6cf7 !important;
+  box-shadow: 0 0 0 3px rgba(74,108,247,0.12) !important;
+}
+
+.p-tag {
+  border-radius: 6px !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+}
+
+/* Stat card helper class */
+.stat-card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e8ecf0;
+  padding: 20px 22px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+/* Page header */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-header-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1a2035;
+  letter-spacing: -0.02em;
+}
+
+.page-header-subtitle {
+  font-size: 0.82rem;
+  color: #8896a7;
+  margin-top: 2px;
 }
