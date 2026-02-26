@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
-import { getMonitoring } from '../services/monitoringService';
+import { getMonitoring } from '../../../services/monitoringService';
 
 export default function MonitoringTable() {
   const [data, setData] = useState([]);

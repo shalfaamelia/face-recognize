@@ -1,4 +1,4 @@
-import MonitoringTable from '@/components/monitoringTable';
+import MonitoringTable from './monitoring/components/monitoringTable';
 
 export default function Home() {
   return (
