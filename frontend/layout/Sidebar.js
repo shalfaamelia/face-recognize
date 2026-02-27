@@ -7,7 +7,7 @@ import Link from 'next/link';
 const navItems = [
   {
     items: [
-      { href: '/', icon: 'pi-home', label: 'Dashboard' },
+      { href: '/dashboard', icon: 'pi-home', label: 'Dashboard' },
       { href: '/pengguna', icon: 'pi-users', label: 'Pengguna' },
       { href: '/jadwal', icon: 'pi-calendar', label: 'Jadwal Praktikum' },
       { href: '/monitoring', icon: 'pi-eye', label: 'Monitoring' },
