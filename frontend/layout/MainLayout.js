@@ -36,7 +36,7 @@ export default function MainLayout({ children }) {
           <div
             style={{
               flex: 1,
-              padding: '28px 32px',
+              padding: '24px 32px 0',
               maxWidth: '1400px',
               width: '100%',
               margin: '0 auto',
