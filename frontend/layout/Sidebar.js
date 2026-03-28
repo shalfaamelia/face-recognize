@@ -8,7 +8,7 @@ const navItems = [
   {
     items: [
       { href: '/dashboard', icon: 'pi-home', label: 'Dashboard' },
-      { href: '/pengguna', icon: 'pi-users', label: 'Pengguna' },
+      { href: '/user', icon: 'pi-users', label: 'Pengguna' },
       { href: '/jadwal', icon: 'pi-calendar', label: 'Jadwal Praktikum' },
       { href: '/monitoring', icon: 'pi-eye', label: 'Monitoring' },
     ],
