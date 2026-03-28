@@ -16,6 +16,20 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
   const inputClass = (field) =>
     errors[field] ? 'p-invalid w-full mt-2' : 'w-full mt-2';
 
+  const onRoleChange = async (e) => {
+    const role = e.value;
+    setForm({ ...form, role });
+
+    try {
+      const res = await fetch(`${API_URL}/users/generate_kode?role=${role}`);
+      const data = await res.json();
+      setForm((prev) => ({ ...prev, kode: data.kode }));
+    } catch (err) {
+      console.error("Gagal generate kode:", err);
+      setForm((prev) => ({ ...prev, kode: '-' }));
+    }
+  };
+
   return (
     <Dialog
       header={form?.id ? 'Edit User' : 'Tambah User'}
@@ -35,8 +49,8 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
           <label>Kode</label>
           <InputText
             className={inputClass('kode')}
-            value={form.kode}
-            onChange={(e) => setForm({ ...form, kode: e.target.value })}
+            value={form.kode || 'Otomatis'}
+            disabled
           />
         </div>
 

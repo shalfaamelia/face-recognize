@@ -37,14 +37,52 @@ def get_users():
     conn.close()
     return jsonify(users)
 
+# ===============================
+# GENERATE KODE OTOMATIS
+# ===============================
+def generate_user_code(role, cursor):
+    prefix_map = {
+        'kepala_lab': 'KL',
+        'teknisi': 'TK',
+        'sarpras': 'SP',
+        'mahasiswa': 'MH'
+    }
+    prefix = prefix_map.get(role)
+    if not prefix:
+        raise ValueError("Role tidak valid untuk generate kode")
+
+    cursor.execute("SELECT kode FROM users WHERE role=%s ORDER BY id DESC LIMIT 1", (role,))
+    last = cursor.fetchone()
+    if last and last[0]:
+        last_num = int(last[0][2:])  # ambil angka setelah prefix
+        new_num = last_num + 1
+    else:
+        new_num = 1
+
+    kode = f"{prefix}{str(new_num).zfill(4)}"
+    return kode
+
+# ===============================
+# API Generate kode berdasarkan role
+# ===============================
+@user_bp.route('/users/generate_kode', methods=['GET'])
+def api_generate_kode():
+    role = request.args.get('role')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        kode = generate_user_code(role, cursor)
+    finally:
+        cursor.close()
+        conn.close()
+    return jsonify({"kode": kode})
+
+# ===============================
+# CREATE USER
+# ===============================
 @user_bp.route('/users', methods=['POST'])
 def create_user():
-    """
-    CREATE USER dengan opsi upload multiple foto sekaligus
-    """
-    # ===== Ambil data dari request =====
     if request.content_type.startswith('multipart/form-data'):
-        kode = request.form.get('kode')
         nama = request.form.get('nama')
         face_label = request.form.get('face_label')
         role = request.form.get('role')
@@ -55,13 +93,12 @@ def create_user():
         email = request.form.get('email')
         password = request.form.get('password')
         status = request.form.get('status', 'aktif')
-        files = request.files.getlist('files')  # <-- ambil semua file
+        files = request.files.getlist('files')
     else:
         data = request.get_json()
-        kode = data.get('kode')
         nama = data.get('nama')
-        face_label = data.get('face_label')
         role = data.get('role')
+        face_label = data.get('face_label')
         nim = data.get('nim')
         nip = data.get('nip')
         prodi = data.get('prodi')
@@ -69,18 +106,20 @@ def create_user():
         email = data.get('email')
         password = data.get('password')
         status = data.get('status', 'aktif')
-        files = []  # JSON tidak support upload file
+        files = []
 
     conn = get_db_connection()
     cursor = conn.cursor()
-
     try:
-        # ===== Cek email unik =====
+        # ===== Email unik =====
         cursor.execute("SELECT id FROM users WHERE email=%s", (email,))
         if cursor.fetchone():
             return jsonify({"message": f"Email '{email}' sudah terdaftar"}), 400
 
-        # ===== INSERT USER =====
+        # ===== Generate kode otomatis =====
+        kode = generate_user_code(role, cursor)
+
+        # ===== Insert user =====
         sql_user = """
             INSERT INTO users
             (kode, nama, face_label, role, nim, nip, prodi, kelas, email, password, status)
@@ -91,20 +130,17 @@ def create_user():
             nim, nip, prodi, kelas, email, password, status
         ))
         user_id = cursor.lastrowid
-        conn.commit()  # commit segera setelah insert user
+        conn.commit()
 
         # ===== Upload files jika ada =====
         if files:
             user_folder = os.path.join(os.path.dirname(__file__), '..', 'dataset', face_label)
             os.makedirs(user_folder, exist_ok=True)
-
             for file in files:
-                if file and '.' in file.filename:
+                if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
                     file_path = os.path.join(user_folder, filename)
                     file.save(file_path)
-
-                    # Insert record ke user_faces
                     cursor.execute(
                         "INSERT INTO user_faces (user_id, image_path, image_name) VALUES (%s,%s,%s)",
                         (user_id, file_path, filename)
@@ -121,6 +157,7 @@ def create_user():
     return jsonify({
         "message": "User berhasil dibuat",
         "user_id": user_id,
+        "kode": kode,
         "files_uploaded": [f.filename for f in files] if files else []
     }), 201
 
@@ -167,7 +204,6 @@ def upload_user_faces(user_id):
     conn.close()
 
     return jsonify({"message": "Files uploaded successfully", "files": uploaded_files}), 201
-
 
 # ===============================
 # ROUTE UNTUK PREVIEW FILE
