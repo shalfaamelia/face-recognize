@@ -1,104 +1,134 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
-import { getUsers, createUser, updateUser, deleteUser } from '@/services/userService';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import ToastNotifier from '@/app/components/toastNotifier';
+import HeaderBar from "@/app/components/headerbar";
 import UserTable from './components/userTable';
 import UserForm from './components/userForm';
+import { getUsers, createUser, updateUser, deleteUser } from '@/services/userService';
 
-export default function UserPage() {
+export default function Page() {
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [form, setForm] = useState({});
   const [editingUser, setEditingUser] = useState(null);
-  const [showForm, setShowForm] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  // =========================
-  // Load daftar user dari backend
-  // =========================
-  const loadUsers = async () => {
+  const toastRef = useRef(null);
+
+  const fetchData = async () => {
     setLoading(true);
     try {
       const data = await getUsers();
-      console.log("Data user dari backend:", data); // debug
       setUsers(data);
     } catch (err) {
-      console.error("Gagal memuat user:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadUsers();
+    fetchData();
   }, []);
 
-  // =========================
-  // Handle submit form (create / update)
-  // =========================
-  const handleSubmit = async (formData) => {
-    try {
-      if (editingUser) {
-        // update user tanpa file (opsional, bisa ditambahkan)
-        await updateUser(editingUser.id, formData);
-        setEditingUser(null);
-      } else {
-        // create user + file foto
-        const isMultipart = formData instanceof FormData; // deteksi FormData
-        await createUser(formData, isMultipart);
-      }
-
-      setShowForm(false);
-      loadUsers(); // refresh tabel otomatis
-    } catch (err) {
-      alert("Terjadi kesalahan saat menyimpan user: " + err.message);
+  const handleSearch = (keyword) => {
+    if (!keyword) {
+      setData(originalData);
+    } else {
+      const filtered = originalData.filter((item) =>
+        item.kode?.toLowerCase().includes(keyword.toLowerCase()) ||
+        item.nama?.toLowerCase().includes(keyword.toLowerCase())
+      );
+      setUsers(filtered);
     }
   };
 
-  // =========================
-  // Handle delete user
-  // =========================
-  const handleDelete = async (id) => {
-    if (confirm("Hapus user ini?")) {
-      try {
-        await deleteUser(id);
-        loadUsers(); // refresh tabel setelah delete
-      } catch (err) {
-        alert("Gagal menghapus user: " + err.message);
+  const handleSubmit = async () => {
+    try {
+      if (editingUser) {
+        await updateUser(editingUser.id, form);
+      } else {
+        const isMultipart = form.file instanceof File;
+        await createUser(form, isMultipart);
       }
+      toastRef.current?.showToast("00", "Data berhasil disimpan");
+      fetchData();
+      setDialogVisible(false);
+      setForm({});
+      setEditingUser(null);
+    } catch (err) {
+      console.error(err);
+      toastRef.current?.showToast("01", "Gagal menyimpan data");
     }
+  };
+
+  const handleEdit = (user) => {
+    setForm(user);
+    setEditingUser(user);
+    setDialogVisible(true);
+  };
+
+  const handleDelete = (user) => {
+    confirmDialog({
+      message: `Yakin hapus '${user.nama}'?`,
+      header: "Konfirmasi Hapus",
+      icon: "pi pi-exclamation-triangle",
+      acceptLabel: "Ya",
+      rejectLabel: "Batal",
+      accept: async () => {
+        try {
+          await deleteUser(user.id);
+          toastRef.current?.showToast("00", "Data berhasil dihapus");
+          fetchData();
+        } catch (err) {
+          console.error(err);
+          toastRef.current?.showToast("01", "Gagal menghapus data");
+        }
+      },
+    });
   };
 
   return (
-    <div className="grid p-4">
-      <div className="col-12">
-        <Card>
-          <div className="flex justify-content-between align-items-center mb-3">
-            <h2>Manajemen Pengguna</h2>
-            <button
-              className="p-button p-component p-button-success"
-              onClick={() => { setShowForm(true); setEditingUser(null); }}
-            >
-              Tambah User
-            </button>
-          </div>
+    <Card>
+      <ToastNotifier ref={toastRef} />
+      <ConfirmDialog />
+      <div className="flex items-center justify-between mb-3">
+      
+        <h3 className="text-xl font-semibold">Manajemen User</h3>
 
-          {/* Form Tambah/Edit User */}
-          {showForm && (
-            <UserForm
-              initialData={editingUser}
-              onSubmit={handleSubmit}
-              onCancel={() => { setShowForm(false); setEditingUser(null); }}
-            />
-          )}
-
-          {/* Tabel User */}
-          <UserTable
-            users={users}
-            onEdit={(user) => { setEditingUser(user); setShowForm(true); }}
-            onDelete={handleDelete}
+        <div className="flex items-center ml-auto gap-2">
+          <HeaderBar
+            title=""
+            placeholder="Cari berdasarkan nama atau kode..."
+            onSearch={handleSearch}
+            onAddClick={() => {
+              setForm({});
+              setEditingUser(null);
+              setDialogVisible(true);
+            }}
           />
-        </Card>
+        </div>
       </div>
-    </div>
+
+      <UserTable
+        users={users}
+        loading={loading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+
+      <UserForm
+        visible={dialogVisible}
+        onHide={() => setDialogVisible(false)}
+        form={form}
+        setForm={setForm}
+        onSubmit={handleSubmit}
+        errors={errors}
+      />
+    </Card>
   );
 }
