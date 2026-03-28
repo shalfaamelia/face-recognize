@@ -32,7 +32,7 @@ def get_users():
 @user_bp.route('/users', methods=['POST'])
 def create_user():
     """
-    CREATE USER dengan opsi upload foto sekaligus
+    CREATE USER dengan opsi upload multiple foto sekaligus
     """
     # ===== Ambil data dari request =====
     if request.content_type.startswith('multipart/form-data'):
@@ -47,7 +47,7 @@ def create_user():
         email = request.form.get('email')
         password = request.form.get('password')
         status = request.form.get('status', 'aktif')
-        file = request.files.get('file')
+        files = request.files.getlist('files')  # <-- ambil semua file
     else:
         data = request.get_json()
         kode = data.get('kode')
@@ -61,7 +61,7 @@ def create_user():
         email = data.get('email')
         password = data.get('password')
         status = data.get('status', 'aktif')
-        file = None
+        files = []  # JSON tidak support upload file
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -85,20 +85,23 @@ def create_user():
         user_id = cursor.lastrowid
         conn.commit()  # commit segera setelah insert user
 
-        # ===== Upload file jika ada =====
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            user_folder = os.path.join(UPLOAD_FOLDER, face_label)
+        # ===== Upload files jika ada =====
+        if files:
+            user_folder = os.path.join(os.path.dirname(__file__), '..', 'dataset', face_label)
             os.makedirs(user_folder, exist_ok=True)
-            file_path = os.path.join(user_folder, filename)
-            file.save(file_path)
 
-            # Insert ke tabel user_faces
-            cursor.execute(
-                "INSERT INTO user_faces (user_id, image_path, image_name) VALUES (%s,%s,%s)",
-                (user_id, file_path, filename)
-            )
-            conn.commit()  # commit terpisah agar tidak lock lama
+            for file in files:
+                if file and '.' in file.filename:
+                    filename = secure_filename(file.filename)
+                    file_path = os.path.join(user_folder, filename)
+                    file.save(file_path)
+
+                    # Insert record ke user_faces
+                    cursor.execute(
+                        "INSERT INTO user_faces (user_id, image_path, image_name) VALUES (%s,%s,%s)",
+                        (user_id, file_path, filename)
+                    )
+            conn.commit()
 
     except Exception as e:
         conn.rollback()
@@ -110,5 +113,5 @@ def create_user():
     return jsonify({
         "message": "User berhasil dibuat",
         "user_id": user_id,
-        "file_uploaded": file.filename if file else None
+        "files_uploaded": [f.filename for f in files] if files else []
     }), 201

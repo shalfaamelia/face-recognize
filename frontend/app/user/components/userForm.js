@@ -5,7 +5,7 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 
-const UserFormDialog = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
+const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
   const roles = [
     { label: 'Kepala Lab', value: 'kepala_lab' },
     { label: 'Teknisi', value: 'teknisi' },
@@ -142,13 +142,15 @@ const UserFormDialog = ({ visible, onHide, onSubmit, form, setForm, errors }) =>
           />
         </div>
 
+        {/* ================= MULTIPLE FILE UPLOAD ================= */}
         <div className="field">
-          <label>Upload Foto</label>
+          <label>Upload Foto (Bisa lebih dari 1)</label>
           <input
             type="file"
             className="w-full mt-2"
             accept="image/*"
-            onChange={(e) => setForm({ ...form, file: e.target.files[0] })}
+            multiple
+            onChange={(e) => setForm({ ...form, files: e.target.files })}
           />
         </div>
 
@@ -160,4 +162,4 @@ const UserFormDialog = ({ visible, onHide, onSubmit, form, setForm, errors }) =>
   );
 };
 
-export default UserFormDialog;
+export default UserForm;

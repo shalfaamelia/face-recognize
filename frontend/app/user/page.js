@@ -52,8 +52,19 @@ export default function Page() {
       if (editingUser) {
         await updateUser(editingUser.id, form);
       } else {
-        const isMultipart = form.file instanceof File;
-        await createUser(form, isMultipart);
+        const isMultipart = form.files && form.files.length > 0;
+        let payload;
+
+        if (form.files && form.files.length > 0) {
+          const payload = new FormData();
+          Object.keys(form).forEach(key => {
+            if (key !== 'files') payload.append(key, form[key]);
+          });
+          for (let i = 0; i < form.files.length; i++) {
+            payload.append('files', form.files[i]);
+          }
+          await createUser(payload, true);
+        }
       }
       toastRef.current?.showToast("00", "Data berhasil disimpan");
       fetchData();
@@ -66,69 +77,69 @@ export default function Page() {
     }
   };
 
-  const handleEdit = (user) => {
-    setForm(user);
-    setEditingUser(user);
-    setDialogVisible(true);
-  };
+    const handleEdit = (user) => {
+      setForm(user);
+      setEditingUser(user);
+      setDialogVisible(true);
+    };
+  
+    const handleDelete = (user) => {
+      confirmDialog({
+        message: `Yakin hapus '${user.nama}'?`,
+        header: "Konfirmasi Hapus",
+        icon: "pi pi-exclamation-triangle",
+        acceptLabel: "Ya",
+        rejectLabel: "Batal",
+        accept: async () => {
+          try {
+            await deleteUser(user.id);
+            toastRef.current?.showToast("00", "Data berhasil dihapus");
+            fetchData();
+          } catch (err) {
+            console.error(err);
+            toastRef.current?.showToast("01", "Gagal menghapus data");
+          }
+        },
+      });
+    };
+  
+    return (
+      <Card>
+        <ToastNotifier ref={toastRef} />
+        <ConfirmDialog />
+        <div className="flex items-center justify-between mb-3">
 
-  const handleDelete = (user) => {
-    confirmDialog({
-      message: `Yakin hapus '${user.nama}'?`,
-      header: "Konfirmasi Hapus",
-      icon: "pi pi-exclamation-triangle",
-      acceptLabel: "Ya",
-      rejectLabel: "Batal",
-      accept: async () => {
-        try {
-          await deleteUser(user.id);
-          toastRef.current?.showToast("00", "Data berhasil dihapus");
-          fetchData();
-        } catch (err) {
-          console.error(err);
-          toastRef.current?.showToast("01", "Gagal menghapus data");
-        }
-      },
-    });
-  };
+          <h3 className="text-xl font-semibold">Manajemen User</h3>
 
-  return (
-    <Card>
-      <ToastNotifier ref={toastRef} />
-      <ConfirmDialog />
-      <div className="flex items-center justify-between mb-3">
-      
-        <h3 className="text-xl font-semibold">Manajemen User</h3>
-
-        <div className="flex items-center ml-auto gap-2">
-          <HeaderBar
-            title=""
-            placeholder="Cari berdasarkan nama atau kode..."
-            onSearch={handleSearch}
-            onAddClick={() => {
-              setForm({});
-              setEditingUser(null);
-              setDialogVisible(true);
-            }}
-          />
+          <div className="flex items-center ml-auto gap-2">
+            <HeaderBar
+              title=""
+              placeholder="Cari berdasarkan nama atau kode..."
+              onSearch={handleSearch}
+              onAddClick={() => {
+                setForm({});
+                setEditingUser(null);
+                setDialogVisible(true);
+              }}
+            />
+          </div>
         </div>
-      </div>
 
-      <UserTable
-        users={users}
-        loading={loading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+        <UserTable
+          users={users}
+          loading={loading}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
 
-      <UserForm
-        visible={dialogVisible}
-        onHide={() => setDialogVisible(false)}
-        form={form}
-        setForm={setForm}
-        onSubmit={handleSubmit}
-        errors={errors}
-      />
-    </Card>
-  );
-}
+        <UserForm
+          visible={dialogVisible}
+          onHide={() => setDialogVisible(false)}
+          form={form}
+          setForm={setForm}
+          onSubmit={handleSubmit}
+          errors={errors}
+        />
+      </Card>
+    );
+  }

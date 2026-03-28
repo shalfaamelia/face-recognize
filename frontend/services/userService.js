@@ -30,11 +30,8 @@ export async function deleteUser(id) {
   return res.json();
 }
 
-export async function uploadUserFace(userId, file) {
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch(`${API_URL}/user_faces/upload/${userId}`, {
+export async function uploadUserFace(userId, formData) {
+  const res = await fetch(`http://localhost:5000/api/user_faces/upload/${userId}`, {
     method: "POST",
     body: formData
   });
