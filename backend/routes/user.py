@@ -37,6 +37,92 @@ def get_users():
     conn.close()
     return jsonify(users)
 
+@user_bp.route('/users', methods=['POST'])
+def create_user():
+    """
+    CREATE USER dengan opsi upload multiple foto sekaligus
+    """
+    # ===== Ambil data dari request =====
+    if request.content_type.startswith('multipart/form-data'):
+        kode = request.form.get('kode')
+        nama = request.form.get('nama')
+        face_label = request.form.get('face_label')
+        role = request.form.get('role')
+        nim = request.form.get('nim')
+        nip = request.form.get('nip')
+        prodi = request.form.get('prodi')
+        kelas = request.form.get('kelas')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        status = request.form.get('status', 'aktif')
+        files = request.files.getlist('files')  # <-- ambil semua file
+    else:
+        data = request.get_json()
+        kode = data.get('kode')
+        nama = data.get('nama')
+        face_label = data.get('face_label')
+        role = data.get('role')
+        nim = data.get('nim')
+        nip = data.get('nip')
+        prodi = data.get('prodi')
+        kelas = data.get('kelas')
+        email = data.get('email')
+        password = data.get('password')
+        status = data.get('status', 'aktif')
+        files = []  # JSON tidak support upload file
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # ===== Cek email unik =====
+        cursor.execute("SELECT id FROM users WHERE email=%s", (email,))
+        if cursor.fetchone():
+            return jsonify({"message": f"Email '{email}' sudah terdaftar"}), 400
+
+        # ===== INSERT USER =====
+        sql_user = """
+            INSERT INTO users
+            (kode, nama, face_label, role, nim, nip, prodi, kelas, email, password, status)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        """
+        cursor.execute(sql_user, (
+            kode, nama, face_label, role,
+            nim, nip, prodi, kelas, email, password, status
+        ))
+        user_id = cursor.lastrowid
+        conn.commit()  # commit segera setelah insert user
+
+        # ===== Upload files jika ada =====
+        if files:
+            user_folder = os.path.join(os.path.dirname(__file__), '..', 'dataset', face_label)
+            os.makedirs(user_folder, exist_ok=True)
+
+            for file in files:
+                if file and '.' in file.filename:
+                    filename = secure_filename(file.filename)
+                    file_path = os.path.join(user_folder, filename)
+                    file.save(file_path)
+
+                    # Insert record ke user_faces
+                    cursor.execute(
+                        "INSERT INTO user_faces (user_id, image_path, image_name) VALUES (%s,%s,%s)",
+                        (user_id, file_path, filename)
+                    )
+            conn.commit()
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"message": f"Gagal membuat user: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+    return jsonify({
+        "message": "User berhasil dibuat",
+        "user_id": user_id,
+        "files_uploaded": [f.filename for f in files] if files else []
+    }), 201
 
 # ===============================
 # UPLOAD USER FACES

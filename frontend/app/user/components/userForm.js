@@ -65,7 +65,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
             value={form.role}
             options={roles}
             onChange={(e) => setForm({ ...form, role: e.value })}
-            placeholder="Pilih role"
+            placeholder="Pilih Role"
           />
         </div>
 
@@ -132,7 +132,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
           <label>Status</label>
           <Dropdown
             className="w-full mt-2"
-            placeholder="Pilih status"
+            placeholder="Pilih Status"
             value={form.status}
             options={[
               { label: 'Aktif', value: 'aktif' },
@@ -142,7 +142,6 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
           />
         </div>
 
-        {/* ================= MULTIPLE FILE UPLOAD ================= */}
         <div className="field">
           <label>Upload Foto (Bisa lebih dari 1)</label>
           <input

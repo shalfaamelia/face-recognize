@@ -17,8 +17,10 @@ const UserTable = ({ users, loading, onEdit, onDelete }) => {
     nonaktif: 'Nonaktif'
   };
 
+  const renderField = (value) => value && value.trim() !== '' ? value : '-';
+
   const renderPhotos = (row) => {
-    if (!row.user_faces || row.user_faces.length === 0) return 'No photo';
+    if (!row.user_faces || row.user_faces.length === 0) return '-';
     return (
       <div className="flex flex-wrap gap-1">
         {row.user_faces.map((photo, idx) => (
@@ -48,15 +50,15 @@ const UserTable = ({ users, loading, onEdit, onDelete }) => {
       emptyMessage="Tidak ada user"
     >
       <Column selectionMode="multiple" headerStyle={{ width: "3em" }}></Column>
-      <Column field="kode" header="Kode" />
-      <Column field="nama" header="Nama" />
-      <Column field="role" header="Role" body={(row) => roleLabels[row.role] || row.role} />
-      <Column field="nip" header="NIP" />
-      <Column field="nim" header="NIM" />
-      <Column field="prodi" header="Prodi" />
-      <Column field="kelas" header="Kelas" />
-      <Column field="email" header="Email" />
-      <Column field="status" header="Status" body={(row) => statusLabels[row.status] || row.status} />
+      <Column field="kode" header="Kode" body={(row) => renderField(row.kode)} />
+      <Column field="nama" header="Nama" body={(row) => renderField(row.nama)} />
+      <Column field="role" header="Role" body={(row) => renderField(roleLabels[row.role] || row.role)} />
+      <Column field="nip" header="NIP" body={(row) => renderField(row.nip)} />
+      <Column field="nim" header="NIM" body={(row) => renderField(row.nim)} />
+      <Column field="prodi" header="Prodi" body={(row) => renderField(row.prodi)} />
+      <Column field="kelas" header="Kelas" body={(row) => renderField(row.kelas)} />
+      <Column field="email" header="Email" body={(row) => renderField(row.email)} />
+      <Column field="status" header="Status" body={(row) => renderField(statusLabels[row.status] || row.status)} />
       <Column header="Foto" body={renderPhotos} />
       <Column
         header="Aksi"
