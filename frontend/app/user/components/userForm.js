@@ -7,7 +7,7 @@ import { Dropdown } from 'primereact/dropdown';
 
 const API_URL = 'http://localhost:5000/api';
 
-const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
+const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUser }) => {
   const roles = [
     { label: 'Kepala Lab', value: 'kepala_lab' },
     { label: 'Teknisi', value: 'teknisi' },
@@ -22,19 +22,21 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
     const role = e.value;
     setForm({ ...form, role });
 
-    try {
-      const res = await fetch(`${API_URL}/users/generate_kode?role=${role}`);
-      const data = await res.json();
-      setForm((prev) => ({ ...prev, kode: data.kode }));
-    } catch (err) {
-      console.error("Gagal generate kode:", err);
-      setForm((prev) => ({ ...prev, kode: '-' }));
+    if (!editingUser) { // hanya saat tambah user
+      try {
+        const res = await fetch(`${API_URL}/users/generate_kode?role=${role}`);
+        const data = await res.json();
+        setForm((prev) => ({ ...prev, kode: data.kode }));
+      } catch (err) {
+        console.error("Gagal generate kode:", err);
+        setForm((prev) => ({ ...prev, kode: '-' }));
+      }
     }
   };
 
   return (
     <Dialog
-      header={form?.id ? 'Edit User' : 'Tambah User'}
+      header={editingUser ? 'Edit User' : 'Tambah User'}
       visible={visible}
       onHide={onHide}
       style={{ width: '40vw' }}
@@ -48,14 +50,16 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
         }}
       >
         {/* Kode Otomatis */}
-        <div>
-          <label>Kode</label>
-          <InputText
-            className={inputClass('kode')}
-            value={form.kode || 'Otomatis'}
-            disabled
-          />
-        </div>
+        {!editingUser && (
+          <div>
+            <label>Kode</label>
+            <InputText
+              className={inputClass('kode')}
+              value={form.kode || 'Otomatis'}
+              disabled
+            />
+          </div>
+        )}
 
         {/* Nama */}
         <div>
@@ -68,19 +72,21 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
         </div>
 
         {/* Role */}
-        <div>
-          <label>Role</label>
-          <Dropdown
-            className="w-full mt-2"
-            value={form.role}
-            options={roles}
-            onChange={onRoleChange}
-            placeholder="Pilih Role"
-          />
-        </div>
+        {!editingUser && ( // role hanya bisa diubah saat tambah
+          <div>
+            <label>Role</label>
+            <Dropdown
+              className="w-full mt-2"
+              value={form.role}
+              options={roles}
+              onChange={onRoleChange}
+              placeholder="Pilih Role"
+            />
+          </div>
+        )}
 
         {/* Mahasiswa Fields */}
-        {form.role === 'mahasiswa' && (
+        {(form.role === 'mahasiswa' && (!editingUser || editingUser)) && (
           <>
             <div>
               <label>NIM</label>
@@ -110,7 +116,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
         )}
 
         {/* Non-Mahasiswa Fields */}
-        {form.role !== 'mahasiswa' && (
+        {(form.role !== 'mahasiswa' && (!editingUser || editingUser)) && (
           <>
             <div>
               <label>NIP</label>
@@ -128,15 +134,17 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
             </div>
-            <div>
-              <label>Password</label>
-              <InputText
-                type="password"
-                className="w-full mt-2"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-              />
-            </div>
+            {!editingUser && (
+              <div>
+                <label>Password</label>
+                <InputText
+                  type="password"
+                  className="w-full mt-2"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                />
+              </div>
+            )}
           </>
         )}
 

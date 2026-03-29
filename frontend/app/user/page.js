@@ -37,9 +37,9 @@ export default function Page() {
 
   const handleSearch = (keyword) => {
     if (!keyword) {
-      setData(originalData);
+      setUsers(users);
     } else {
-      const filtered = originalData.filter((item) =>
+      const filtered = users.filter((item) =>
         item.kode?.toLowerCase().includes(keyword.toLowerCase()) ||
         item.nama?.toLowerCase().includes(keyword.toLowerCase())
       );
@@ -53,9 +53,8 @@ export default function Page() {
         await updateUser(editingUser.id, form);
       } else {
         const isMultipart = form.files && form.files.length > 0;
-        let payload;
 
-        if (form.files && form.files.length > 0) {
+        if (isMultipart) {
           const payload = new FormData();
           Object.keys(form).forEach(key => {
             if (key !== 'files') payload.append(key, form[key]);
@@ -64,8 +63,11 @@ export default function Page() {
             payload.append('files', form.files[i]);
           }
           await createUser(payload, true);
+        } else {
+          await createUser(form);
         }
       }
+
       toastRef.current?.showToast("00", "Data berhasil disimpan");
       fetchData();
       setDialogVisible(false);
@@ -79,10 +81,24 @@ export default function Page() {
 
   // Edit
   const handleEdit = (user) => {
-    setForm({
-      ...user,
-      files: [] // kosongkan file input agar bisa upload baru
-    });
+    // Hanya kolom yang bisa diedit yang di-set ke form
+    let editableForm = {
+      id: user.id,
+      nama: user.nama,
+      status: user.status,
+      role: user.role,
+    };
+
+    if (user.role === 'mahasiswa') {
+      editableForm.nim = user.nim;
+      editableForm.prodi = user.prodi;
+      editableForm.kelas = user.kelas;
+    } else {
+      editableForm.nip = user.nip;
+      editableForm.email = user.email;
+    }
+
+    setForm(editableForm);
     setEditingUser(user);
     setDialogVisible(true);
   };
@@ -144,7 +160,7 @@ export default function Page() {
         setForm={setForm}
         onSubmit={handleSubmit}
         errors={errors}
-        editingUser={editingUser} // ✅ WAJIB
+        editingUser={editingUser} // menandakan ini proses edit
       />
     </Card>
   );
