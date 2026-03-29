@@ -77,69 +77,75 @@ export default function Page() {
     }
   };
 
-    const handleEdit = (user) => {
-      setForm(user);
-      setEditingUser(user);
-      setDialogVisible(true);
-    };
-  
-    const handleDelete = (user) => {
-      confirmDialog({
-        message: `Yakin hapus '${user.nama}'?`,
-        header: "Konfirmasi Hapus",
-        icon: "pi pi-exclamation-triangle",
-        acceptLabel: "Ya",
-        rejectLabel: "Batal",
-        accept: async () => {
-          try {
-            await deleteUser(user.id);
-            toastRef.current?.showToast("00", "Data berhasil dihapus");
-            fetchData();
-          } catch (err) {
-            console.error(err);
-            toastRef.current?.showToast("01", "Gagal menghapus data");
-          }
-        },
-      });
-    };
-  
-    return (
-      <Card>
-        <ToastNotifier ref={toastRef} />
-        <ConfirmDialog />
-        <div className="flex items-center justify-between mb-3">
+  // Edit
+  const handleEdit = (user) => {
+    setForm({
+      ...user,
+      files: [] // kosongkan file input agar bisa upload baru
+    });
+    setEditingUser(user);
+    setDialogVisible(true);
+  };
 
-          <h3 className="text-xl font-semibold">Manajemen User</h3>
+  // Delete
+  const handleDelete = (user) => {
+    confirmDialog({
+      message: `Yakin hapus '${user.nama}'?`,
+      header: "Konfirmasi Hapus",
+      icon: "pi pi-exclamation-triangle",
+      acceptLabel: "Ya",
+      rejectLabel: "Batal",
+      accept: async () => {
+        try {
+          await deleteUser(user.id);
+          toastRef.current?.showToast("00", "Data berhasil dihapus");
+          fetchData();
+        } catch (err) {
+          console.error(err);
+          toastRef.current?.showToast("01", `Gagal menghapus: ${err.message}`);
+        }
+      },
+    });
+  };
 
-          <div className="flex items-center ml-auto gap-2">
-            <HeaderBar
-              title=""
-              placeholder="Cari berdasarkan nama atau kode..."
-              onSearch={handleSearch}
-              onAddClick={() => {
-                setForm({});
-                setEditingUser(null);
-                setDialogVisible(true);
-              }}
-            />
-          </div>
+  return (
+    <Card>
+      <ToastNotifier ref={toastRef} />
+      <ConfirmDialog />
+      <div className="flex items-center justify-between mb-3">
+
+        <h3 className="text-xl font-semibold">Manajemen User</h3>
+
+        <div className="flex items-center ml-auto gap-2">
+          <HeaderBar
+            title=""
+            placeholder="Cari berdasarkan nama atau kode..."
+            onSearch={handleSearch}
+            onAddClick={() => {
+              setForm({});
+              setEditingUser(null);
+              setDialogVisible(true);
+            }}
+          />
         </div>
+      </div>
 
-        <UserTable
-          users={users}
-          loading={loading}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-        />
+      <UserTable
+        users={users}
+        loading={loading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
-        <UserForm
-          visible={dialogVisible}
-          onHide={() => setDialogVisible(false)}
-          form={form}
-          setForm={setForm}
-          onSubmit={handleSubmit}
-          errors={errors}
-        />
-      </Card>
-    );
-  }
+      <UserForm
+        visible={dialogVisible}
+        onHide={() => setDialogVisible(false)}
+        form={form}
+        setForm={setForm}
+        onSubmit={handleSubmit}
+        errors={errors}
+        editingUser={editingUser} // ✅ WAJIB
+      />
+    </Card>
+  );
+}

@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 import os
+import shutil
 from db import get_db_connection
 
 user_bp = Blueprint('users', __name__)
@@ -119,26 +120,20 @@ def create_user():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        # ===== Email unik jika role bukan mahasiswa =====
         if role != 'mahasiswa' and email:
             cursor.execute("SELECT id FROM users WHERE email=%s", (email,))
             if cursor.fetchone():
                 return jsonify({"message": f"Email '{email}' sudah terdaftar"}), 400
 
-        # ===== Generate kode otomatis =====
         kode = generate_user_code(role, cursor)
-
-        # ===== Generate face_label otomatis =====
         face_label = generate_face_label(nama)
 
-        # ===== Insert user =====
         sql_user = """
             INSERT INTO users
             (kode, nama, face_label, role, nim, nip, prodi, kelas, email, password, status)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """
 
-        # Jika mahasiswa, email dan password diset None
         if role == 'mahasiswa':
             email = None
             password = None
@@ -150,9 +145,8 @@ def create_user():
         user_id = cursor.lastrowid
         conn.commit()
 
-        # ===== Upload files jika ada =====
         if files:
-            user_folder = os.path.join(os.path.dirname(__file__), '..', 'dataset', face_label)
+            user_folder = os.path.join(UPLOAD_FOLDER, face_label)
             os.makedirs(user_folder, exist_ok=True)
             for file in files:
                 if file and allowed_file(file.filename):
@@ -195,7 +189,6 @@ def upload_user_faces(user_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    # ambil face_label
     cursor.execute("SELECT face_label FROM users WHERE id=%s", (user_id,))
     user = cursor.fetchone()
     if not user:
@@ -231,7 +224,94 @@ def upload_user_faces(user_id):
 def uploaded_file(face_label, filename):
     folder = os.path.join(UPLOAD_FOLDER, face_label)
     file_path = os.path.join(folder, filename)
-    print("Looking for file:", file_path)  # debug
+    print("Looking for file:", file_path)
     if not os.path.exists(file_path):
         return jsonify({"message": f"File not found: {file_path}"}), 404
     return send_from_directory(folder, filename)
+
+# ===============================
+# UPDATE USER
+# ===============================
+@user_bp.route('/users/<int:user_id>', methods=['PUT'])
+def update_user(user_id):
+    data = request.get_json()
+    nama = data.get('nama')
+    role = data.get('role')
+    nim = data.get('nim')
+    nip = data.get('nip')
+    prodi = data.get('prodi')
+    kelas = data.get('kelas')
+    email = data.get('email')
+    password = data.get('password')
+    status = data.get('status')
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT * FROM users WHERE id=%s", (user_id,))
+        user = cursor.fetchone()
+        if not user:
+            return jsonify({"message": "User tidak ditemukan"}), 404
+
+        if role == 'mahasiswa':
+            email = None
+            password = None
+
+        sql = """
+            UPDATE users SET
+            nama=%s, role=%s, nim=%s, nip=%s,
+            prodi=%s, kelas=%s, email=%s, password=%s, status=%s
+            WHERE id=%s
+        """
+        cursor.execute(sql, (
+            nama, role, nim, nip,
+            prodi, kelas, email, password, status,
+            user_id
+        ))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"message": f"Gagal update user: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+    return jsonify({"message": "User berhasil diupdate"}), 200
+
+# ===============================
+# DELETE USER (PERBAIKAN WINERROR 5)
+# ===============================
+@user_bp.route('/users/<int:user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        # ambil face_label
+        cursor.execute("SELECT face_label FROM users WHERE id=%s", (user_id,))
+        user = cursor.fetchone()
+        if not user:
+            return jsonify({"message": "User tidak ditemukan"}), 404
+        face_label = user[0]
+
+        # hapus record user_faces di DB
+        cursor.execute("DELETE FROM user_faces WHERE user_id=%s", (user_id,))
+
+        # hapus folder foto dengan shutil (mengatasi WinError 5)
+        folder = os.path.join(UPLOAD_FOLDER, face_label)
+        if os.path.exists(folder) and os.path.isdir(folder):
+            try:
+                shutil.rmtree(folder, ignore_errors=True)
+            except Exception as e:
+                print(f"Gagal hapus folder {folder}: {e}")
+
+        # hapus user
+        cursor.execute("DELETE FROM users WHERE id=%s", (user_id,))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"message": f"Gagal hapus user: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+    return jsonify({"message": "User berhasil dihapus"}), 200

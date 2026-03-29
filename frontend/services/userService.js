@@ -22,11 +22,16 @@ export async function updateUser(id, data) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   });
+  if (!res.ok) throw new Error('Gagal update user');
   return res.json();
 }
 
 export async function deleteUser(id) {
   const res = await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message || "Gagal hapus user");
+  }
   return res.json();
 }
 
