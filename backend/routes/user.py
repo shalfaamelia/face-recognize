@@ -78,13 +78,22 @@ def api_generate_kode():
     return jsonify({"kode": kode})
 
 # ===============================
+# Fungsi bantu generate face_label otomatis
+# ===============================
+def generate_face_label(nama):
+    if not nama:
+        return "user"
+    # ubah ke lowercase, ganti spasi dengan underscore
+    label = nama.strip().lower().replace(" ", "_")
+    return label
+
+# ===============================
 # CREATE USER
 # ===============================
 @user_bp.route('/users', methods=['POST'])
 def create_user():
     if request.content_type.startswith('multipart/form-data'):
         nama = request.form.get('nama')
-        face_label = request.form.get('face_label')
         role = request.form.get('role')
         nim = request.form.get('nim')
         nip = request.form.get('nip')
@@ -98,7 +107,6 @@ def create_user():
         data = request.get_json()
         nama = data.get('nama')
         role = data.get('role')
-        face_label = data.get('face_label')
         nim = data.get('nim')
         nip = data.get('nip')
         prodi = data.get('prodi')
@@ -111,13 +119,17 @@ def create_user():
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        # ===== Email unik =====
-        cursor.execute("SELECT id FROM users WHERE email=%s", (email,))
-        if cursor.fetchone():
-            return jsonify({"message": f"Email '{email}' sudah terdaftar"}), 400
+        # ===== Email unik jika role bukan mahasiswa =====
+        if role != 'mahasiswa' and email:
+            cursor.execute("SELECT id FROM users WHERE email=%s", (email,))
+            if cursor.fetchone():
+                return jsonify({"message": f"Email '{email}' sudah terdaftar"}), 400
 
         # ===== Generate kode otomatis =====
         kode = generate_user_code(role, cursor)
+
+        # ===== Generate face_label otomatis =====
+        face_label = generate_face_label(nama)
 
         # ===== Insert user =====
         sql_user = """
@@ -125,6 +137,12 @@ def create_user():
             (kode, nama, face_label, role, nim, nip, prodi, kelas, email, password, status)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """
+
+        # Jika mahasiswa, email dan password diset None
+        if role == 'mahasiswa':
+            email = None
+            password = None
+
         cursor.execute(sql_user, (
             kode, nama, face_label, role,
             nim, nip, prodi, kelas, email, password, status
@@ -158,6 +176,7 @@ def create_user():
         "message": "User berhasil dibuat",
         "user_id": user_id,
         "kode": kode,
+        "face_label": face_label,
         "files_uploaded": [f.filename for f in files] if files else []
     }), 201
 

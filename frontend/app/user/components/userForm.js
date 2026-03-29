@@ -5,6 +5,8 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 
+const API_URL = 'http://localhost:5000/api';
+
 const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
   const roles = [
     { label: 'Kepala Lab', value: 'kepala_lab' },
@@ -45,6 +47,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
           onSubmit();
         }}
       >
+        {/* Kode Otomatis */}
         <div>
           <label>Kode</label>
           <InputText
@@ -54,6 +57,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
           />
         </div>
 
+        {/* Nama */}
         <div>
           <label>Nama</label>
           <InputText
@@ -63,26 +67,19 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
           />
         </div>
 
-        <div>
-          <label>Face Label</label>
-          <InputText
-            className="w-full mt-2"
-            value={form.face_label}
-            onChange={(e) => setForm({ ...form, face_label: e.target.value })}
-          />
-        </div>
-
+        {/* Role */}
         <div>
           <label>Role</label>
           <Dropdown
             className="w-full mt-2"
             value={form.role}
             options={roles}
-            onChange={(e) => setForm({ ...form, role: e.value })}
+            onChange={onRoleChange}
             placeholder="Pilih Role"
           />
         </div>
 
+        {/* Mahasiswa Fields */}
         {form.role === 'mahasiswa' && (
           <>
             <div>
@@ -112,36 +109,38 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
           </>
         )}
 
+        {/* Non-Mahasiswa Fields */}
         {form.role !== 'mahasiswa' && (
-          <div>
-            <label>NIP</label>
-            <InputText
-              className="w-full mt-2"
-              value={form.nip}
-              onChange={(e) => setForm({ ...form, nip: e.target.value })}
-            />
-          </div>
+          <>
+            <div>
+              <label>NIP</label>
+              <InputText
+                className="w-full mt-2"
+                value={form.nip}
+                onChange={(e) => setForm({ ...form, nip: e.target.value })}
+              />
+            </div>
+            <div>
+              <label>Email</label>
+              <InputText
+                className="w-full mt-2"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+            </div>
+            <div>
+              <label>Password</label>
+              <InputText
+                type="password"
+                className="w-full mt-2"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+              />
+            </div>
+          </>
         )}
 
-        <div>
-          <label>Email</label>
-          <InputText
-            className="w-full mt-2"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
-        </div>
-
-        <div>
-          <label>Password</label>
-          <InputText
-            type="password"
-            className="w-full mt-2"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-          />
-        </div>
-
+        {/* Status */}
         <div>
           <label>Status</label>
           <Dropdown
@@ -156,6 +155,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
           />
         </div>
 
+        {/* Upload Foto */}
         <div className="field">
           <label>Upload Foto (Bisa lebih dari 1)</label>
           <input
@@ -167,6 +167,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors }) => {
           />
         </div>
 
+        {/* Submit */}
         <div className="text-right pt-3">
           <Button type="submit" label="Simpan" icon="pi pi-save" />
         </div>
