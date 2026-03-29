@@ -22,7 +22,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
     const role = e.value;
     setForm({ ...form, role });
 
-    if (!editingUser) { // hanya saat tambah user
+    if (!editingUser) { // generate kode hanya saat tambah user
       try {
         const res = await fetch(`${API_URL}/users/generate_kode?role=${role}`);
         const data = await res.json();
@@ -50,16 +50,14 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
         }}
       >
         {/* Kode Otomatis */}
-        {!editingUser && (
-          <div>
-            <label>Kode</label>
-            <InputText
-              className={inputClass('kode')}
-              value={form.kode || 'Otomatis'}
-              disabled
-            />
-          </div>
-        )}
+        <div>
+          <label>Kode</label>
+          <InputText
+            className={inputClass('kode')}
+            value={form.kode || 'Otomatis'}
+            disabled
+          />
+        </div>
 
         {/* Nama */}
         <div>
@@ -71,8 +69,8 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
           />
         </div>
 
-        {/* Role */}
-        {!editingUser && ( // role hanya bisa diubah saat tambah
+        {/* Role hanya saat tambah */}
+        {!editingUser && (
           <div>
             <label>Role</label>
             <Dropdown
@@ -86,7 +84,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
         )}
 
         {/* Mahasiswa Fields */}
-        {(form.role === 'mahasiswa' && (!editingUser || editingUser)) && (
+        {form.role === 'mahasiswa' && (
           <>
             <div>
               <label>NIM</label>
@@ -116,7 +114,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
         )}
 
         {/* Non-Mahasiswa Fields */}
-        {(form.role !== 'mahasiswa' && (!editingUser || editingUser)) && (
+        {form.role !== 'mahasiswa' && (
           <>
             <div>
               <label>NIP</label>
@@ -134,6 +132,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
             </div>
+            {/* Password hanya saat tambah */}
             {!editingUser && (
               <div>
                 <label>Password</label>
@@ -163,17 +162,19 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
           />
         </div>
 
-        {/* Upload Foto */}
-        <div className="field">
-          <label>Upload Foto (Bisa lebih dari 1)</label>
-          <input
-            type="file"
-            className="w-full mt-2"
-            accept="image/*"
-            multiple
-            onChange={(e) => setForm({ ...form, files: e.target.files })}
-          />
-        </div>
+        {/* Upload Foto hanya saat tambah */}
+        {!editingUser && (
+          <div className="field">
+            <label>Upload Foto (Bisa lebih dari 1)</label>
+            <input
+              type="file"
+              className="w-full mt-2"
+              accept="image/*"
+              multiple
+              onChange={(e) => setForm({ ...form, files: e.target.files })}
+            />
+          </div>
+        )}
 
         {/* Submit */}
         <div className="text-right pt-3">
