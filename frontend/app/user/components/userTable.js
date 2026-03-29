@@ -49,7 +49,6 @@ const UserTable = ({ users, loading, onEdit, onDelete }) => {
       responsiveLayout="scroll"
       emptyMessage="Tidak ada user"
     >
-      <Column selectionMode="multiple" headerStyle={{ width: "3em" }}></Column>
       <Column field="kode" header="Kode" body={(row) => renderField(row.kode)} />
       <Column field="nama" header="Nama" body={(row) => renderField(row.nama)} />
       <Column field="role" header="Role" body={(row) => renderField(roleLabels[row.role] || row.role)} />
