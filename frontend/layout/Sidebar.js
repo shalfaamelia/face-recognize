@@ -3,6 +3,7 @@
 import { Sidebar as PrimeSidebar } from 'primereact/sidebar';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import React from 'react';
 
 const navItems = [
   {
@@ -11,6 +12,17 @@ const navItems = [
       { href: '/user', icon: 'pi-users', label: 'Pengguna' },
       { href: '/jadwal', icon: 'pi-calendar', label: 'Jadwal Praktikum' },
       { href: '/monitoring', icon: 'pi-eye', label: 'Monitoring' },
+      { href: '/peminjaman', icon: 'pi-calendar-plus', label: 'Peminjaman Lab' },
+      {
+        href: '/laporan',
+        icon: 'pi-file',
+        label: 'Laporan',
+        children: [
+          { href: '/laporan/akses', icon: 'pi-key', label: 'Laporan Akses Lab' },
+          { href: '/laporan/peminjaman', icon: 'pi-book', label: 'Laporan Peminjaman Lab' },
+          { href: '/laporan/barang', icon: 'pi-box', label: 'Laporan Barang Lab' },
+        ],
+      },
     ],
   },
 ];
@@ -18,10 +30,13 @@ const navItems = [
 export default function Sidebar({ collapsed, mobileVisible, setMobileVisible }) {
   const pathname = usePathname();
 
-  const NavItem = ({ href, icon, label }) => {
+  const NavItem = ({ href, icon, label, children }) => {
     const active = pathname === href;
+    const [open, setOpen] = React.useState(false);
+
     return (
-      <Link href={href} style={{ textDecoration: 'none' }}>
+      <div>
+        {/* Parent menu */}
         <div
           className="flex align-items-center gap-3"
           style={{
@@ -31,13 +46,12 @@ export default function Sidebar({ collapsed, mobileVisible, setMobileVisible }) 
             margin: '2px 8px',
             cursor: 'pointer',
             transition: 'all 0.15s ease',
-            background: active
-              ? 'linear-gradient(135deg, #4a6cf7 0%, #6a85f5 100%)'
-              : 'transparent',
+            background: active ? 'linear-gradient(135deg, #4a6cf7 0%, #6a85f5 100%)' : 'transparent',
             color: active ? '#fff' : '#5a6a85',
             boxShadow: active ? '0 4px 12px rgba(74,108,247,0.3)' : 'none',
             position: 'relative',
           }}
+          onClick={() => children && setOpen(!open)}
           onMouseEnter={e => {
             if (!active) e.currentTarget.style.background = '#f0f4ff';
             if (!active) e.currentTarget.style.color = '#4a6cf7';
@@ -48,29 +62,25 @@ export default function Sidebar({ collapsed, mobileVisible, setMobileVisible }) 
           }}
           title={collapsed ? label : ''}
         >
-          <i
-            className={`pi ${icon}`}
-            style={{ fontSize: '1rem', minWidth: '20px', textAlign: 'center' }}
-          />
-          {!collapsed && (
-            <span style={{ fontSize: '0.875rem', fontWeight: active ? 600 : 500, whiteSpace: 'nowrap' }}>
-              {label}
-            </span>
+          <i className={`pi ${icon}`} style={{ fontSize: '1rem', minWidth: '20px', textAlign: 'center' }} />
+          {!collapsed && <span style={{ fontSize: '0.875rem', fontWeight: active ? 600 : 500 }}>{label}</span>}
+          {children && !collapsed && (
+            <i className={`pi ${open ? 'pi-chevron-down' : 'pi-chevron-right'}`} style={{ marginLeft: 'auto' }} />
           )}
-          {active && !collapsed && (
-            <div
-              style={{
-                position: 'absolute',
-                right: '14px',
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.7)',
-              }}
-            />
+          {!children && (
+            <Link href={href} style={{ position: 'absolute', inset: 0 }} />
           )}
         </div>
-      </Link>
+
+        {/* Render children submenu */}
+        {children && open && (
+          <div style={{ paddingLeft: collapsed ? '0' : '20px' }}>
+            {children.map((child, idx) => (
+              <NavItem key={idx} {...child} />
+            ))}
+          </div>
+        )}
+      </div>
     );
   };
 
@@ -84,26 +94,24 @@ export default function Sidebar({ collapsed, mobileVisible, setMobileVisible }) 
         overflowX: 'hidden',
       }}
     >
-
-      {/* Nav groups */}
       <div className="flex flex-column flex-1 py-2" style={{ overflowY: 'auto', overflowX: 'hidden' }}>
         {navItems.map((group, gi) => (
           <div key={gi} style={{ marginBottom: '8px' }}>
-            {!collapsed && (
-              <div style={{
-                padding: '8px 22px 4px',
-                fontSize: '0.68rem',
-                fontWeight: 700,
-                color: '#b0bac8',
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-              }}>
+            {!collapsed && group.group && (
+              <div
+                style={{
+                  padding: '8px 22px 4px',
+                  fontSize: '0.68rem',
+                  fontWeight: 700,
+                  color: '#b0bac8',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                }}
+              >
                 {group.group}
               </div>
             )}
-            {collapsed && gi > 0 && (
-              <div style={{ height: '1px', background: '#e8ecf0', margin: '6px 12px' }} />
-            )}
+            {collapsed && gi > 0 && <div style={{ height: '1px', background: '#e8ecf0', margin: '6px 12px' }} />}
             {group.items.map((item, ii) => (
               <NavItem key={ii} {...item} />
             ))}
