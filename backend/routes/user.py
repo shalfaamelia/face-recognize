@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, send_from_directory
 from werkzeug.utils import secure_filename
 import os
 import shutil
+import subprocess
 from db import get_db_connection
 
 user_bp = Blueprint('users', __name__)
@@ -12,6 +13,19 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# ===============================
+# BANTUAN: Update embeddings & retrain SVM otomatis
+# ===============================
+def update_embeddings_and_svm():
+    try:
+        # Jalankan extract_embedding.py
+        subprocess.run(['python', 'extract_embedding.py'], check=True)
+        # Jalankan training_svm.py
+        subprocess.run(['python', 'training_svm.py'], check=True)
+        print("Embeddings and SVM updated successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Error updating embeddings/SVM: {e}")
 
 # ===============================
 # GET USERS + INCLUDE USER FACES
@@ -32,7 +46,7 @@ def get_users():
     for user in users:
         cursor.execute("SELECT image_name FROM user_faces WHERE user_id=%s", (user['id'],))
         faces = cursor.fetchall()
-        user['user_faces'] = faces  # array of dict {image_name: ...}
+        user['user_faces'] = faces
 
     cursor.close()
     conn.close()
@@ -55,7 +69,7 @@ def generate_user_code(role, cursor):
     cursor.execute("SELECT kode FROM users WHERE role=%s ORDER BY id DESC LIMIT 1", (role,))
     last = cursor.fetchone()
     if last and last[0]:
-        last_num = int(last[0][2:])  # ambil angka setelah prefix
+        last_num = int(last[0][2:])
         new_num = last_num + 1
     else:
         new_num = 1
@@ -84,7 +98,6 @@ def api_generate_kode():
 def generate_face_label(nama):
     if not nama:
         return "user"
-    # ubah ke lowercase, ganti spasi dengan underscore
     label = nama.strip().lower().replace(" ", "_")
     return label
 
@@ -159,6 +172,11 @@ def create_user():
                     )
             conn.commit()
 
+        # ===============================
+        # Update embeddings & retrain SVM otomatis
+        # ===============================
+        update_embeddings_and_svm()
+
     except Exception as e:
         conn.rollback()
         return jsonify({"message": f"Gagal membuat user: {str(e)}"}), 500
@@ -214,6 +232,11 @@ def upload_user_faces(user_id):
     conn.commit()
     cursor.close()
     conn.close()
+
+    # ===============================
+    # Update embeddings & retrain SVM otomatis
+    # ===============================
+    update_embeddings_and_svm()
 
     return jsonify({"message": "Files uploaded successfully", "files": uploaded_files}), 201
 
@@ -279,24 +302,21 @@ def update_user(user_id):
     return jsonify({"message": "User berhasil diupdate"}), 200
 
 # ===============================
-# DELETE USER (PERBAIKAN WINERROR 5)
+# DELETE USER
 # ===============================
 @user_bp.route('/users/<int:user_id>', methods=['DELETE'])
 def delete_user(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
-        # ambil face_label
         cursor.execute("SELECT face_label FROM users WHERE id=%s", (user_id,))
         user = cursor.fetchone()
         if not user:
             return jsonify({"message": "User tidak ditemukan"}), 404
         face_label = user[0]
 
-        # hapus record user_faces di DB
         cursor.execute("DELETE FROM user_faces WHERE user_id=%s", (user_id,))
 
-        # hapus folder foto dengan shutil (mengatasi WinError 5)
         folder = os.path.join(UPLOAD_FOLDER, face_label)
         if os.path.exists(folder) and os.path.isdir(folder):
             try:
@@ -304,7 +324,6 @@ def delete_user(user_id):
             except Exception as e:
                 print(f"Gagal hapus folder {folder}: {e}")
 
-        # hapus user
         cursor.execute("DELETE FROM users WHERE id=%s", (user_id,))
         conn.commit()
     except Exception as e:

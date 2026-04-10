@@ -63,6 +63,36 @@ def log_to_backend(face_label):
         print(f"Error connecting to backend: {e}")
 
 # =========================
+# Fungsi untuk memproses frame (real-time / test folder)
+# =========================
+def process_frame(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = detector.detect(gray)
+
+    for (x, y, w, h) in faces:
+        try:
+            face = align_face(frame, (x, y, w, h))
+            emb = embedder.embed(face)
+            predicted_label = recognizer.predict(emb)  # face_label
+            user = get_user_info(predicted_label)
+            display_name = user['nama'] if user else "Unknown"
+
+            # Tampilkan di frame
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+            cv2.putText(frame, display_name, (x, y-10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+
+            # Log ke backend
+            if user:
+                log_to_backend(predicted_label)
+
+        except Exception as e:
+            print(f"Error processing face: {e}")
+            continue
+
+    return frame
+
+# =========================
 # Inisialisasi webcam
 # =========================
 cap = cv2.VideoCapture(0)
@@ -75,23 +105,7 @@ if cap.isOpened():
             print("Failed to grab frame")
             break
 
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = detector.detect(gray)
-
-        for (x, y, w, h) in faces:
-            try:
-                face = align_face(frame, (x, y, w, h))
-                emb = embedder.embed(face)
-                face_label = recognizer.predict(emb)  # output harus face_label
-
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                cv2.putText(frame, face_label, (x, y-10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-
-                log_to_backend(face_label)
-
-            except Exception:
-                continue
+        frame = process_frame(frame)
 
         cv2.imshow("Face Recognition (Webcam)", frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -112,23 +126,7 @@ else:
             if frame is None:
                 continue
 
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = detector.detect(gray)
-
-            for (x, y, w, h) in faces:
-                try:
-                    face = align_face(frame, (x, y, w, h))
-                    emb = embedder.embed(face)
-                    face_label = recognizer.predict(emb)
-
-                    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-                    cv2.putText(frame, face_label, (x, y-10),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-
-                    log_to_backend(face_label)
-
-                except Exception:
-                    continue
+            frame = process_frame(frame)
 
             cv2.imshow("Face Recognition (Test Folder)", frame)
             print(f"Processed {filename}. Press any key for next image, 'q' to quit.")
