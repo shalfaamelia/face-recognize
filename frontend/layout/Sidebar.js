@@ -4,23 +4,25 @@ import { Sidebar as PrimeSidebar } from 'primereact/sidebar';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import React from 'react';
+import { useAuth } from '@/app/components/authProvider';
 
 const navItems = [
   {
     items: [
-      { href: '/dashboard', icon: 'pi-home', label: 'Dashboard' },
-      { href: '/user', icon: 'pi-users', label: 'Pengguna' },
-      { href: '/jadwal', icon: 'pi-calendar', label: 'Jadwal Praktikum' },
-      { href: '/monitoring', icon: 'pi-eye', label: 'Monitoring' },
-      { href: '/peminjaman_lab', icon: 'pi-calendar-plus', label: 'Peminjaman Lab' },
+      { href: '/dashboard', icon: 'pi-home', label: 'Dashboard', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
+      { href: '/user', icon: 'pi-users', label: 'Pengguna', roles: ['kepala_lab'] },
+      { href: '/jadwal', icon: 'pi-calendar', label: 'Jadwal Praktikum', roles: ['kepala_lab', 'teknisi'] },
+      { href: '/monitoring', icon: 'pi-eye', label: 'Monitoring', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
+      { href: '/peminjaman_lab', icon: 'pi-calendar-plus', label: 'Peminjaman Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
       {
         href: '/laporan',
         icon: 'pi-file',
         label: 'Laporan',
+        roles: ['kepala_lab', 'teknisi', 'sarpras'],
         children: [
-          { href: '/laporan/akses', icon: 'pi-key', label: 'Laporan Akses Lab' },
-          { href: '/laporan/peminjaman', icon: 'pi-book', label: 'Laporan Peminjaman Lab' },
-          { href: '/laporan/barang', icon: 'pi-box', label: 'Laporan Barang Lab' },
+          { href: '/laporan/akses', icon: 'pi-key', label: 'Laporan Akses Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
+          { href: '/laporan/peminjaman', icon: 'pi-book', label: 'Laporan Peminjaman Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
+          { href: '/laporan/barang', icon: 'pi-box', label: 'Laporan Barang Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
         ],
       },
     ],
@@ -29,14 +31,31 @@ const navItems = [
 
 export default function Sidebar({ collapsed, mobileVisible, setMobileVisible }) {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const canAccess = (roles = []) => {
+    if (!user?.role) return false;
+    return roles.includes(user.role);
+  };
+
+  const filteredNavItems = navItems.map((group) => ({
+    ...group,
+    items: group.items
+      .filter((item) => canAccess(item.roles))
+      .map((item) => ({
+        ...item,
+        children: item.children ? item.children.filter((child) => canAccess(child.roles)) : undefined,
+      }))
+      .filter((item) => !item.children || item.children.length > 0),
+  }));
 
   const NavItem = ({ href, icon, label, children }) => {
     const active = pathname === href;
-    const [open, setOpen] = React.useState(false);
+    const activeChild = children?.some((child) => pathname === child.href);
+    const [open, setOpen] = React.useState(activeChild || false);
 
     return (
       <div>
-        {/* Parent menu */}
         <div
           className="flex align-items-center gap-3"
           style={{
@@ -46,24 +65,26 @@ export default function Sidebar({ collapsed, mobileVisible, setMobileVisible }) 
             margin: '2px 8px',
             cursor: 'pointer',
             transition: 'all 0.15s ease',
-            background: active ? 'linear-gradient(135deg, #4a6cf7 0%, #6a85f5 100%)' : 'transparent',
-            color: active ? '#fff' : '#5a6a85',
-            boxShadow: active ? '0 4px 12px rgba(74,108,247,0.3)' : 'none',
+            background: (active || activeChild)
+              ? 'linear-gradient(135deg, #4a6cf7 0%, #6a85f5 100%)'
+              : 'transparent',
+            color: (active || activeChild) ? '#fff' : '#5a6a85',
+            boxShadow: (active || activeChild) ? '0 4px 12px rgba(74,108,247,0.3)' : 'none',
             position: 'relative',
           }}
           onClick={() => children && setOpen(!open)}
           onMouseEnter={e => {
-            if (!active) e.currentTarget.style.background = '#f0f4ff';
-            if (!active) e.currentTarget.style.color = '#4a6cf7';
+            if (!(active || activeChild)) e.currentTarget.style.background = '#f0f4ff';
+            if (!(active || activeChild)) e.currentTarget.style.color = '#4a6cf7';
           }}
           onMouseLeave={e => {
-            if (!active) e.currentTarget.style.background = 'transparent';
-            if (!active) e.currentTarget.style.color = '#5a6a85';
+            if (!(active || activeChild)) e.currentTarget.style.background = 'transparent';
+            if (!(active || activeChild)) e.currentTarget.style.color = '#5a6a85';
           }}
           title={collapsed ? label : ''}
         >
           <i className={`pi ${icon}`} style={{ fontSize: '1rem', minWidth: '20px', textAlign: 'center' }} />
-          {!collapsed && <span style={{ fontSize: '0.875rem', fontWeight: active ? 600 : 500 }}>{label}</span>}
+          {!collapsed && <span style={{ fontSize: '0.875rem', fontWeight: (active || activeChild) ? 600 : 500 }}>{label}</span>}
           {children && !collapsed && (
             <i className={`pi ${open ? 'pi-chevron-down' : 'pi-chevron-right'}`} style={{ marginLeft: 'auto' }} />
           )}
@@ -72,7 +93,6 @@ export default function Sidebar({ collapsed, mobileVisible, setMobileVisible }) 
           )}
         </div>
 
-        {/* Render children submenu */}
         {children && open && (
           <div style={{ paddingLeft: collapsed ? '0' : '20px' }}>
             {children.map((child, idx) => (
@@ -95,23 +115,8 @@ export default function Sidebar({ collapsed, mobileVisible, setMobileVisible }) 
       }}
     >
       <div className="flex flex-column flex-1 py-2" style={{ overflowY: 'auto', overflowX: 'hidden' }}>
-        {navItems.map((group, gi) => (
+        {filteredNavItems.map((group, gi) => (
           <div key={gi} style={{ marginBottom: '8px' }}>
-            {!collapsed && group.group && (
-              <div
-                style={{
-                  padding: '8px 22px 4px',
-                  fontSize: '0.68rem',
-                  fontWeight: 700,
-                  color: '#b0bac8',
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {group.group}
-              </div>
-            )}
-            {collapsed && gi > 0 && <div style={{ height: '1px', background: '#e8ecf0', margin: '6px 12px' }} />}
             {group.items.map((item, ii) => (
               <NavItem key={ii} {...item} />
             ))}
@@ -123,7 +128,6 @@ export default function Sidebar({ collapsed, mobileVisible, setMobileVisible }) 
 
   return (
     <>
-      {/* Desktop */}
       <div
         style={{
           width: collapsed ? '64px' : '240px',
@@ -137,7 +141,6 @@ export default function Sidebar({ collapsed, mobileVisible, setMobileVisible }) 
         <SidebarContent />
       </div>
 
-      {/* Mobile */}
       <PrimeSidebar
         visible={mobileVisible}
         onHide={() => setMobileVisible(false)}

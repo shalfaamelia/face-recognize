@@ -11,21 +11,18 @@ export default function MainLayout({ children }) {
 
   return (
     <div className="flex flex-column" style={{ minHeight: '100vh', background: '#f5f7fb' }}>
-
       <Topbar
         toggleSidebar={() => setCollapsed(!collapsed)}
         toggleMobileSidebar={() => setMobileVisible(!mobileVisible)}
       />
 
       <div className="flex flex-1" style={{ overflow: 'hidden' }}>
-
         <Sidebar
           collapsed={collapsed}
           mobileVisible={mobileVisible}
           setMobileVisible={setMobileVisible}
         />
 
-        {/* Main content */}
         <div
           className="flex flex-column flex-1"
           style={{
@@ -44,11 +41,10 @@ export default function MainLayout({ children }) {
           >
             {children}
           </div>
+
           <Footer />
         </div>
-
       </div>
-
     </div>
   );
 }

@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from db import get_db_connection
+from utils.auth_guard import auth_required
 
 jadwal_bp = Blueprint('jadwal', __name__)
 
@@ -7,6 +8,7 @@ jadwal_bp = Blueprint('jadwal', __name__)
 # GET JADWAL PRAKTIKUM
 # ===============================
 @jadwal_bp.route('/', methods=['GET'])
+@auth_required(['kepala_lab', 'teknisi'])
 def get_jadwal():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -26,6 +28,7 @@ def get_jadwal():
 # CREATE JADWAL PRAKTIKUM
 # ===============================
 @jadwal_bp.route('/', methods=['POST'])
+@auth_required(['kepala_lab', 'teknisi'])
 def create_jadwal():
     data = request.get_json()
     kode = data.get('kode')  # input manual
@@ -59,6 +62,7 @@ def create_jadwal():
 # UPDATE JADWAL PRAKTIKUM
 # ===============================
 @jadwal_bp.route('/<int:jadwal_id>', methods=['PUT'])
+@auth_required(['kepala_lab', 'teknisi'])
 def update_jadwal(jadwal_id):
     data = request.get_json()
     kode = data.get('kode')
@@ -95,6 +99,7 @@ def update_jadwal(jadwal_id):
 # DELETE JADWAL PRAKTIKUM
 # ===============================
 @jadwal_bp.route('/<int:jadwal_id>', methods=['DELETE'])
+@auth_required(['kepala_lab', 'teknisi'])
 def delete_jadwal(jadwal_id):
     conn = get_db_connection()
     cursor = conn.cursor()

@@ -4,6 +4,7 @@ import os
 import shutil
 import subprocess
 from db import get_db_connection
+from utils.auth_guard import auth_required
 
 user_bp = Blueprint('users', __name__)
 
@@ -31,6 +32,7 @@ def update_embeddings_and_svm():
 # GET USERS + INCLUDE USER FACES
 # ===============================
 @user_bp.route('/users', methods=['GET'])
+@auth_required(['kepala_lab'])
 def get_users():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -81,6 +83,7 @@ def generate_user_code(role, cursor):
 # API Generate kode berdasarkan role
 # ===============================
 @user_bp.route('/users/generate_kode', methods=['GET'])
+@auth_required(['kepala_lab'])
 def api_generate_kode():
     role = request.args.get('role')
     conn = get_db_connection()
@@ -105,6 +108,7 @@ def generate_face_label(nama):
 # CREATE USER
 # ===============================
 @user_bp.route('/users', methods=['POST'])
+@auth_required(['kepala_lab'])
 def create_user():
     if request.content_type.startswith('multipart/form-data'):
         nama = request.form.get('nama')
@@ -196,6 +200,7 @@ def create_user():
 # UPLOAD USER FACES
 # ===============================
 @user_bp.route('/users/<int:user_id>/upload_faces', methods=['POST'])
+@auth_required(['kepala_lab'])
 def upload_user_faces(user_id):
     if 'files' not in request.files:
         return jsonify({"message": "No files part"}), 400
@@ -256,6 +261,7 @@ def uploaded_file(face_label, filename):
 # UPDATE USER
 # ===============================
 @user_bp.route('/users/<int:user_id>', methods=['PUT'])
+@auth_required(['kepala_lab'])
 def update_user(user_id):
     data = request.get_json()
     nama = data.get('nama')
@@ -305,6 +311,7 @@ def update_user(user_id):
 # DELETE USER
 # ===============================
 @user_bp.route('/users/<int:user_id>', methods=['DELETE'])
+@auth_required(['kepala_lab'])
 def delete_user(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()

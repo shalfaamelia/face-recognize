@@ -2,8 +2,20 @@
 
 import { Button } from 'primereact/button';
 import { Avatar } from 'primereact/avatar';
+import { useAuth } from '@/app/components/authProvider';
+
+function formatRole(role) {
+  if (role === 'kepala_lab') return 'Kepala Lab';
+  if (role === 'teknisi') return 'Teknisi';
+  if (role === 'sarpras') return 'Sarana Prasarana';
+  return '-';
+}
 
 export default function Topbar({ toggleSidebar, toggleMobileSidebar }) {
+  const { user, logout } = useAuth();
+
+  const avatarLabel = user?.nama ? user.nama.charAt(0).toUpperCase() : 'A';
+
   return (
     <div
       className="flex justify-content-between align-items-center px-4"
@@ -17,19 +29,15 @@ export default function Topbar({ toggleSidebar, toggleMobileSidebar }) {
         boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
       }}
     >
-      {/* Left: Toggle + Brand */}
       <div className="flex align-items-center gap-3">
-        {/* Mobile hamburger */}
         <Button
           icon="pi pi-bars"
           text
           onClick={toggleMobileSidebar}
-          className="p-button-rounded"
+          className="p-button-rounded md:hidden"
           style={{ color: '#6b7280' }}
-          pt={{ root: { className: 'block md:hidden' } }}
         />
 
-        {/* Desktop collapse */}
         <Button
           icon="pi pi-bars"
           text
@@ -38,7 +46,6 @@ export default function Topbar({ toggleSidebar, toggleMobileSidebar }) {
           style={{ color: '#6b7280' }}
         />
 
-        {/* Brand */}
         <div className="flex align-items-center gap-2">
           <div
             style={{
@@ -54,6 +61,7 @@ export default function Topbar({ toggleSidebar, toggleMobileSidebar }) {
           >
             <i className="pi pi-lock" style={{ color: '#fff', fontSize: '0.85rem' }} />
           </div>
+
           <span
             style={{
               fontWeight: 700,
@@ -67,14 +75,10 @@ export default function Topbar({ toggleSidebar, toggleMobileSidebar }) {
         </div>
       </div>
 
-      {/* Right: Avatar */}
-      <div className="flex align-items-center gap-2">
-        <div className="flex align-items-center gap-2 cursor-pointer" style={{ padding: '4px 8px', borderRadius: '8px', transition: 'background 0.15s' }}
-          onMouseEnter={e => e.currentTarget.style.background = '#f5f7ff'}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-        >
+      <div className="flex align-items-center gap-3">
+        <div className="hidden md:flex align-items-center gap-2">
           <Avatar
-            label="A"
+            label={avatarLabel}
             shape="circle"
             style={{
               background: 'linear-gradient(135deg, #4a6cf7, #6a85f5)',
@@ -85,12 +89,25 @@ export default function Topbar({ toggleSidebar, toggleMobileSidebar }) {
               fontWeight: 600,
             }}
           />
-          <div className="hidden md:flex flex-column" style={{ lineHeight: 1.3 }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a2035' }}>Admin</span>
-            <span style={{ fontSize: '0.72rem', color: '#8896a7' }}>Super Admin</span>
+
+          <div className="flex flex-column" style={{ lineHeight: 1.3 }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a2035' }}>
+              {user?.nama || 'User'}
+            </span>
+            <span style={{ fontSize: '0.72rem', color: '#8896a7' }}>
+              {formatRole(user?.role)}
+            </span>
           </div>
-          <i className="pi pi-angle-down hidden md:flex" style={{ fontSize: '0.7rem', color: '#8896a7' }} />
         </div>
+
+        <Button
+          label="Logout"
+          icon="pi pi-sign-out"
+          severity="secondary"
+          outlined
+          size="small"
+          onClick={logout}
+        />
       </div>
     </div>
   );
