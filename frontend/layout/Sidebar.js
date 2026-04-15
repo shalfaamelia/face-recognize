@@ -12,7 +12,7 @@ const navItems = [
       { href: '/user', icon: 'pi-users', label: 'Pengguna' },
       { href: '/jadwal', icon: 'pi-calendar', label: 'Jadwal Praktikum' },
       { href: '/monitoring', icon: 'pi-eye', label: 'Monitoring' },
-      { href: '/peminjaman', icon: 'pi-calendar-plus', label: 'Peminjaman Lab' },
+      { href: '/peminjaman_lab', icon: 'pi-calendar-plus', label: 'Peminjaman Lab' },
       {
         href: '/laporan',
         icon: 'pi-file',
