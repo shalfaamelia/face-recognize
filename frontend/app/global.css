@@ -141,3 +141,20 @@ h2 {
   color: #8896a7;
   margin-top: 2px;
 }
+
+.login-password-field .p-password {
+  width: 100% !important;
+  display: flex !important;
+}
+
+.login-password-field .p-password-input,
+.login-password-field .p-inputtext {
+  width: 100% !important;
+  border-radius: 12px !important;
+  padding-top: 0.85rem !important;
+  padding-bottom: 0.85rem !important;
+}
+
+.login-password-field .p-icon-field-right {
+  width: 100% !important;
+}
