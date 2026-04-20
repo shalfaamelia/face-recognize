@@ -1,4 +1,17 @@
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+export function getAuthHeaders(extraHeaders = {}) {
+  const token = getStoredToken();
+
+  if (!token) {
+    return { ...extraHeaders };
+  }
+
+  return {
+    Authorization: `Bearer ${token}`,
+    ...extraHeaders,
+  };
+}
 
 export async function loginUser(data) {
   const res = await fetch(`${API_URL}/auth/login`, {
@@ -10,7 +23,7 @@ export async function loginUser(data) {
   const result = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    throw new Error(result.message || 'Login gagal');
+    throw new Error(result.message || 'Login failed');
   }
 
   return result;
@@ -27,7 +40,7 @@ export async function getMe(token) {
   const result = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    throw new Error(result.message || 'Gagal mengambil profile');
+    throw new Error(result.message || 'Failed to fetch profile');
   }
 
   return result;

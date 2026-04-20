@@ -1,5 +1,12 @@
-import DashboardPage from './dashboard/page';
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 
 export default function Home() {
-  return <DashboardPage />;
+  const token = cookies().get('token');
+
+  if (token) {
+    redirect('/dashboard');
+  } else {
+    redirect('/login');
+  }
 }
