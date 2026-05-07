@@ -70,6 +70,8 @@ export default function Page() {
         status: statusBaru
       });
 
+      setAllPeminjaman((prev) => prev.filter((item) => item.id !== row.id));
+      setPeminjaman((prev) => prev.filter((item) => item.id !== row.id));
       showToast('success', 'Berhasil', result.message || 'Status berhasil diperbarui');
       await fetchData();
     } catch (err) {

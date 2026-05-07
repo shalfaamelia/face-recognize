@@ -33,6 +33,22 @@ export async function createJadwal(data) {
   return result;
 }
 
+export async function importJadwalExcel(formData) {
+  const res = await fetch(`${API_URL}/jadwal/import`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: formData,
+  });
+
+  const result = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(result.message || 'Gagal import jadwal');
+  }
+
+  return result;
+}
+
 export async function updateJadwal(id, data) {
   const res = await fetch(`${API_URL}/jadwal/${id}`, {
     method: 'PUT',

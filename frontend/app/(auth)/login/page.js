@@ -251,7 +251,7 @@ export default function LoginPage() {
 
               <div className="text-center mt-2">
                 <small className="text-500" style={{ lineHeight: 1.7 }}>
-                  Login hanya untuk <b>Kepala Lab</b>, <b>Teknisi</b>, dan <b>Sarana Prasarana</b>.
+                  Login hanya untuk <b>Kepala Lab</b>, <b>Teknisi</b>, <b>Dosen</b>, dan <b>Sarana Prasarana</b>.
                 </small>
               </div>
             </form>

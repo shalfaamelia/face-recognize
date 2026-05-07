@@ -19,7 +19,9 @@ export async function getPeminjaman() {
 export async function updateStatusPeminjaman(id, data) {
   const res = await fetch(`${API_URL}/admin/peminjaman/${id}/status`, {
     method: 'PUT',
-    headers: getAuthHeaders(),
+    headers: getAuthHeaders({
+      'Content-Type': 'application/json',
+    }),
     body: JSON.stringify(data)
   });
 

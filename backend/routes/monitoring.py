@@ -20,7 +20,7 @@ def get_monitoring():
         logs = cursor.fetchall()
         for log in logs:
             if log.get('masuk'):
-                log['masuk'] = log['masuk'].isoformat()
+                log['masuk'] = log['masuk'].strftime('%Y/%m/%d %H:%M:%S')
     except Exception as e:
         return jsonify({"message": f"Failed to fetch logs: {str(e)}"}), 500
     finally:
@@ -55,7 +55,7 @@ def get_user_monitoring(user_id):
         logs = cursor.fetchall()
         for log in logs:
             if log.get('masuk'):
-                log['masuk'] = log['masuk'].isoformat()
+                log['masuk'] = log['masuk'].strftime('%Y/%m/%d %H:%M:%S')
     except Exception as e:
         return jsonify({"message": f"Failed to fetch logs: {str(e)}"}), 500
     finally:

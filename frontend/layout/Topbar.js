@@ -7,6 +7,7 @@ import { useAuth } from '@/app/components/authProvider';
 function formatRole(role) {
   if (role === 'kepala_lab') return 'Kepala Lab';
   if (role === 'teknisi') return 'Teknisi';
+  if (role === 'dosen') return 'Dosen';
   if (role === 'sarpras') return 'Sarana Prasarana';
   return '-';
 }

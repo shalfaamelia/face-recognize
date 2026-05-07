@@ -2,12 +2,19 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import ToastNotifier from '@/app/components/toastNotifier';
 import HeaderBar from "@/app/components/headerbar";
 import JadwalTable from './components/jadwalTable';
 import JadwalForm from './components/jadwalForm';
-import { getJadwal, createJadwal, updateJadwal, deleteJadwal } from '@/services/jadwalService';
+import {
+    getJadwal,
+    createJadwal,
+    updateJadwal,
+    deleteJadwal,
+    importJadwalExcel,
+} from '@/services/jadwalService';
 
 export default function Page() {
     const [jadwal, setJadwal] = useState([]);
@@ -16,6 +23,7 @@ export default function Page() {
     const [form, setForm] = useState({});
     const [editing, setEditing] = useState(false);
     const toastRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     const fetchData = async () => {
         setLoading(true);
@@ -44,6 +52,27 @@ export default function Page() {
         } catch (err) {
             console.error(err);
             toastRef.current?.showToast("01", "Gagal menyimpan data");
+        }
+    };
+
+    const handleImportExcel = async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const payload = new FormData();
+        payload.append('file', file);
+
+        setLoading(true);
+        try {
+            const result = await importJadwalExcel(payload);
+            toastRef.current?.showToast("00", result.message || "Import jadwal berhasil");
+            await fetchData();
+        } catch (err) {
+            console.error(err);
+            toastRef.current?.showToast("01", err.message || "Gagal import jadwal");
+        } finally {
+            event.target.value = '';
+            setLoading(false);
         }
     };
 
@@ -82,6 +111,21 @@ export default function Page() {
                 <h3 className="text-xl font-semibold">Manajemen Jadwal Praktikum</h3>
 
                 <div className="flex items-center ml-auto gap-2">
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".xlsx"
+                        className="hidden"
+                        onChange={handleImportExcel}
+                    />
+                    <Button
+                        type="button"
+                        label="Import Excel"
+                        icon="pi pi-upload"
+                        severity="secondary"
+                        outlined
+                        onClick={() => fileInputRef.current?.click()}
+                    />
                     <HeaderBar
                         title=""
                         placeholder="Cari berdasarkan nama atau kode..."

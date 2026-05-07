@@ -78,6 +78,9 @@ def auth_required(allowed_roles=None):
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
+            if request.method == 'OPTIONS':
+                return '', 204
+
             user, error = get_current_user()
             if error:
                 return jsonify({"message": error}), 401

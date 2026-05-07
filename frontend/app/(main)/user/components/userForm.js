@@ -11,6 +11,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
   const roles = [
     { label: 'Kepala Lab', value: 'kepala_lab' },
     { label: 'Teknisi', value: 'teknisi' },
+    { label: 'Dosen', value: 'dosen' },
     { label: 'Sarana Prasarana', value: 'sarpras' },
     { label: 'Mahasiswa', value: 'mahasiswa' }
   ];
@@ -168,6 +169,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
             <label>Upload Foto (Bisa lebih dari 1)</label>
             <input
               type="file"
+              name="files"
               className="w-full mt-2"
               accept="image/*"
               multiple

@@ -2,17 +2,27 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { Dialog } from 'primereact/dialog';
 import ToastNotifier from '@/app/components/toastNotifier';
 import HeaderBar from "@/app/components/headerbar";
 import UserTable from './components/userTable';
 import UserForm from './components/userForm';
-import { getUsers, createUser, updateUser, deleteUser } from '@/services/userService';
+import {
+  getUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  importUsersExcelZip,
+} from '@/services/userService';
 
 export default function Page() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [importDialogVisible, setImportDialogVisible] = useState(false);
+  const [importFiles, setImportFiles] = useState({});
   const [form, setForm] = useState({});
   const [editingUser, setEditingUser] = useState(null);
   const [errors, setErrors] = useState({});
@@ -57,7 +67,9 @@ export default function Page() {
         if (isMultipart) {
           const payload = new FormData();
           Object.keys(form).forEach(key => {
-            if (key !== 'files') payload.append(key, form[key]);
+            if (key !== 'files' && form[key] !== undefined && form[key] !== null) {
+              payload.append(key, form[key]);
+            }
           });
           for (let i = 0; i < form.files.length; i++) {
             payload.append('files', form.files[i]);
@@ -75,7 +87,34 @@ export default function Page() {
       setEditingUser(null);
     } catch (err) {
       console.error(err);
-      toastRef.current?.showToast("01", "Gagal menyimpan data");
+      toastRef.current?.showToast("01", err.message || "Gagal menyimpan data");
+    }
+  };
+
+  const handleImportUsers = async () => {
+    if (!importFiles.excel) {
+      toastRef.current?.showToast("01", "File Excel wajib dipilih");
+      return;
+    }
+
+    const payload = new FormData();
+    payload.append('excel', importFiles.excel);
+    if (importFiles.photosZip) {
+      payload.append('photos_zip', importFiles.photosZip);
+    }
+
+    setLoading(true);
+    try {
+      const result = await importUsersExcelZip(payload);
+      toastRef.current?.showToast("00", result.message || "Import user berhasil");
+      await fetchData();
+      setImportDialogVisible(false);
+      setImportFiles({});
+    } catch (err) {
+      console.error(err);
+      toastRef.current?.showToast("01", err.message || "Gagal import user");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -133,6 +172,14 @@ export default function Page() {
         <h3 className="text-xl font-semibold">Manajemen User</h3>
 
         <div className="flex items-center ml-auto gap-2">
+          <Button
+            type="button"
+            label="Import Excel"
+            icon="pi pi-upload"
+            severity="secondary"
+            outlined
+            onClick={() => setImportDialogVisible(true)}
+          />
           <HeaderBar
             title=""
             placeholder="Cari berdasarkan nama atau kode..."
@@ -162,6 +209,55 @@ export default function Page() {
         errors={errors}
         editingUser={editingUser} // menandakan ini proses edit
       />
+
+      <Dialog
+        header="Import User"
+        visible={importDialogVisible}
+        onHide={() => {
+          setImportDialogVisible(false);
+          setImportFiles({});
+        }}
+        style={{ width: '40vw' }}
+        modal
+      >
+        <div className="space-y-3">
+          <div>
+            <label>File Excel (.xlsx)</label>
+            <input
+              type="file"
+              accept=".xlsx"
+              className="w-full mt-2"
+              onChange={(e) => setImportFiles((prev) => ({
+                ...prev,
+                excel: e.target.files?.[0],
+              }))}
+            />
+          </div>
+
+          <div>
+            <label>ZIP Foto (.zip)</label>
+            <input
+              type="file"
+              accept=".zip"
+              className="w-full mt-2"
+              onChange={(e) => setImportFiles((prev) => ({
+                ...prev,
+                photosZip: e.target.files?.[0],
+              }))}
+            />
+          </div>
+
+          <div className="text-right pt-3">
+            <Button
+              type="button"
+              label="Import"
+              icon="pi pi-upload"
+              loading={loading}
+              onClick={handleImportUsers}
+            />
+          </div>
+        </div>
+      </Dialog>
     </Card>
   );
 }

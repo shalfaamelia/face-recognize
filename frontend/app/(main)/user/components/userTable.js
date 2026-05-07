@@ -9,6 +9,7 @@ const UserTable = ({ users, loading, onEdit, onDelete }) => {
   const roleLabels = {
     kepala_lab: 'Kepala Lab',
     teknisi: 'Teknisi',
+    dosen: 'Dosen',
     sarpras: 'Sarana Prasarana',
     mahasiswa: 'Mahasiswa'
   };
@@ -22,17 +23,28 @@ const UserTable = ({ users, loading, onEdit, onDelete }) => {
 
   const renderPhotos = (row) => {
     if (!row.user_faces || row.user_faces.length === 0) return '-';
+
+    const getPhotoName = (photo) => {
+      const value = photo.image_name || photo.image_path || '';
+      return String(value).split(/[\\/]/).pop();
+    };
+
     return (
       <div className="flex flex-wrap gap-1">
-        {row.user_faces.map((photo, idx) => (
-          <img
-            key={idx}
-            src={`${API_URL}/uploads/${row.face_label}/${photo.image_name}`}
-            alt={photo.image_name}
-            style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
-            onError={(e) => e.target.src = 'https://via.placeholder.com/50?text=No+Photo'}
-          />
-        ))}
+        {row.user_faces.map((photo, idx) => {
+          const photoName = getPhotoName(photo);
+          if (!photoName) return null;
+
+          return (
+            <img
+              key={idx}
+              src={`${API_URL}/uploads/${row.face_label}/${encodeURIComponent(photoName)}`}
+              alt={photoName}
+              style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
+              onError={(e) => e.target.src = 'https://via.placeholder.com/50?text=No+Photo'}
+            />
+          );
+        })}
       </div>
     );
   };

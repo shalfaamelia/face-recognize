@@ -11,18 +11,33 @@ const LaporanPeminjamanTable = ({ laporan, loading }) => {
       : '-';
   };
 
+  const formatJam = (value) => {
+    const jam = renderField(value);
+    if (jam === '-') return jam;
+
+    const [hour, minute] = String(jam).split(':');
+    if (!hour || !minute) return jam;
+
+    return `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
+  };
+
+  const formatStatus = (value) => {
+    const status = renderField(value);
+    return status === '-' ? status : status.charAt(0).toUpperCase() + status.slice(1);
+  };
+
   const statusBodyTemplate = (row) => {
     let severity = 'info';
 
     if (row.status === 'disetujui') severity = 'success';
     else if (row.status === 'ditolak') severity = 'danger';
 
-    return <Tag value={renderField(row.status)} severity={severity} />;
+    return <Tag value={formatStatus(row.status)} severity={severity} />;
   };
 
   const jamBodyTemplate = (row) => {
-    const jamMulai = renderField(row.jam_mulai);
-    const jamSelesai = renderField(row.jam_selesai);
+    const jamMulai = formatJam(row.jam_mulai);
+    const jamSelesai = formatJam(row.jam_selesai);
     return `${jamMulai} - ${jamSelesai}`;
   };
 

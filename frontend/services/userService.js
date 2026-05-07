@@ -35,6 +35,22 @@ export async function createUser(data, isMultipart = false) {
   return result;
 }
 
+export async function importUsersExcelZip(formData) {
+  const res = await fetch(`${API_URL}/users/import`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: formData,
+  });
+
+  const result = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(result.message || 'Gagal import user');
+  }
+
+  return result;
+}
+
 export async function updateUser(id, data) {
   const res = await fetch(`${API_URL}/users/${id}`, {
     method: 'PUT',
