@@ -5,6 +5,7 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 
 const UserTable = ({ users, loading, onEdit, onDelete }) => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const roleLabels = {
     kepala_lab: 'Kepala Lab',
     teknisi: 'Teknisi',
@@ -26,7 +27,7 @@ const UserTable = ({ users, loading, onEdit, onDelete }) => {
         {row.user_faces.map((photo, idx) => (
           <img
             key={idx}
-            src={`http://localhost:5000/uploads/${row.face_label}/${photo.image_name}`}
+            src={`${API_URL}/uploads/${row.face_label}/${photo.image_name}`}
             alt={photo.image_name}
             style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
             onError={(e) => e.target.src = 'https://via.placeholder.com/50?text=No+Photo'}
