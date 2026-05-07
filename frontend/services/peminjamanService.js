@@ -1,7 +1,12 @@
+import { getAuthHeaders } from "./authService";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getPeminjaman() {
-  const res = await fetch(`${API_URL}/admin/peminjaman`);
+  const res = await fetch(`${API_URL}/admin/peminjaman`, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
@@ -14,7 +19,7 @@ export async function getPeminjaman() {
 export async function updateStatusPeminjaman(id, data) {
   const res = await fetch(`${API_URL}/admin/peminjaman/${id}/status`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(data)
   });
 

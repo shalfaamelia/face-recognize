@@ -77,7 +77,6 @@ const LaporanBarangTable = ({ laporanBarang, loading }) => {
       <Column field="keterangan" header="Keterangan" body={keteranganBodyTemplate} />
       <Column field="deskripsi" header="Deskripsi" body={(row) => renderField(row.deskripsi)} />
       <Column header="Foto" body={fotoBodyTemplate} />
-      <Column field="status" header="Status" body={statusBodyTemplate} />
     </DataTable>
   );
 };
