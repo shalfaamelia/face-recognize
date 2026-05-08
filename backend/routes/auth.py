@@ -90,6 +90,110 @@ def me():
     }), 200
 
 
+@auth_bp.route('/auth/profile', methods=['GET'])
+def get_profile():
+    user, error = get_current_user()
+    if error:
+        return jsonify({"message": error}), 401
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT id, kode, nama, role, email, nip, status
+            FROM users
+            WHERE id = %s
+        """, (user['id'],))
+        profile = cursor.fetchone()
+
+        if not profile:
+            return jsonify({"message": "Profile tidak ditemukan"}), 404
+
+        return jsonify({
+            "profile": {
+                "id": profile['id'],
+                "kode": profile['kode'],
+                "nama": profile['nama'],
+                "role": profile['role'],
+                "email": profile['email'],
+                "nip": profile['nip'],
+                "status": profile['status']
+            }
+        }), 200
+
+    except Exception as e:
+        return jsonify({"message": f"Gagal mengambil profile: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@auth_bp.route('/auth/profile', methods=['PUT'])
+def update_profile():
+    user, error = get_current_user()
+    if error:
+        return jsonify({"message": error}), 401
+
+    data = request.get_json()
+    nama = data.get('nama')
+    email = data.get('email')
+    password = data.get('password')
+
+    if not nama or not email:
+        return jsonify({"message": "Nama dan email wajib diisi"}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT id FROM users WHERE email=%s AND id != %s", (email, user['id']))
+        if cursor.fetchone():
+            return jsonify({"message": f"Email '{email}' sudah terdaftar"}), 400
+
+        if password:
+            cursor.execute("""
+                UPDATE users
+                SET nama=%s, email=%s, password=%s
+                WHERE id=%s
+            """, (nama, email, password, user['id']))
+        else:
+            cursor.execute("""
+                UPDATE users
+                SET nama=%s, email=%s
+                WHERE id=%s
+            """, (nama, email, user['id']))
+
+        conn.commit()
+
+        cursor.execute("""
+            SELECT id, kode, nama, role, email, nip, status
+            FROM users
+            WHERE id = %s
+        """, (user['id'],))
+        updated_profile = cursor.fetchone()
+
+        return jsonify({
+            "message": "Profile berhasil diperbarui",
+            "profile": {
+                "id": updated_profile['id'],
+                "kode": updated_profile['kode'],
+                "nama": updated_profile['nama'],
+                "role": updated_profile['role'],
+                "email": updated_profile['email'],
+                "nip": updated_profile['nip'],
+                "status": updated_profile['status']
+            }
+        }), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"message": f"Gagal update profile: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
 @auth_bp.route('/auth/logout', methods=['POST'])
 def logout():
     return jsonify({"message": "Logout berhasil"}), 200
