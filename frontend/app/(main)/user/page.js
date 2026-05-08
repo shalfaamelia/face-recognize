@@ -172,14 +172,6 @@ export default function Page() {
         <h3 className="text-xl font-semibold">Manajemen User</h3>
 
         <div className="flex items-center ml-auto gap-2">
-          <Button
-            type="button"
-            label="Import Excel"
-            icon="pi pi-upload"
-            severity="secondary"
-            outlined
-            onClick={() => setImportDialogVisible(true)}
-          />
           <HeaderBar
             title=""
             placeholder="Cari berdasarkan nama atau kode..."
@@ -189,6 +181,14 @@ export default function Page() {
               setEditingUser(null);
               setDialogVisible(true);
             }}
+          />
+          <Button
+            type="button"
+            label="Import Excel"
+            icon="pi pi-upload"
+            severity="success"
+            size="small"
+            onClick={() => setImportDialogVisible(true)}
           />
         </div>
       </div>

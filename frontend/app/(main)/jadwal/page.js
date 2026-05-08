@@ -118,14 +118,6 @@ export default function Page() {
                         className="hidden"
                         onChange={handleImportExcel}
                     />
-                    <Button
-                        type="button"
-                        label="Import Excel"
-                        icon="pi pi-upload"
-                        severity="secondary"
-                        outlined
-                        onClick={() => fileInputRef.current?.click()}
-                    />
                     <HeaderBar
                         title=""
                         placeholder="Cari berdasarkan nama atau kode..."
@@ -137,6 +129,14 @@ export default function Page() {
                             ));
                         }}
                         onAddClick={() => { setForm({}); setEditing(false); setDialogVisible(true); }}
+                    />
+                    <Button
+                        type="button"
+                        label="Import Excel"
+                        icon="pi pi-upload"
+                        severity="success"
+                        size="small"
+                        onClick={() => fileInputRef.current?.click()}
                     />
                 </div>
             </div>

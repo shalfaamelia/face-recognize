@@ -29,8 +29,11 @@ def get_monitoring():
     return jsonify(logs)
 
 # ===============================
-# GET LOGS FOR SPECIFIC USER (query param)
+# GET ALL LOGS (ALIAS FOR LAPORAN AKSES LAB)
 # ===============================
+@monitoring_bp.route('/laporan/akses', methods=['GET'])
+def get_laporan_akses_lab():
+    return get_monitoring()
 @monitoring_bp.route('/monitoring_user', methods=['GET'])
 def monitoring_user_query():
     user_id = request.args.get('user_id', type=int)

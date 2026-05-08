@@ -1,6 +1,6 @@
 import os
 import uuid
-from flask import Blueprint, request, jsonify, send_from_directory
+from flask import Blueprint, request, jsonify, send_from_directory, url_for
 from werkzeug.utils import secure_filename
 from db import get_db_connection
 
@@ -23,7 +23,7 @@ def format_laporan_barang_row(row):
         row['tanggal'] = row['tanggal'].isoformat()
 
     if row.get('foto'):
-        row['foto_url'] = f"{request.host_url.rstrip('/')}/laporan-barang/uploads/{row['foto']}"
+        row['foto_url'] = url_for('laporan_barang.get_laporan_barang_file', filename=row['foto'], _external=True)
     else:
         row['foto_url'] = None
 
