@@ -17,25 +17,54 @@ const LaporanBarangTable = ({ laporanBarang, loading }) => {
       : '-';
   };
 
+  const formatBadgeText = (value) => {
+    if (!value) return '-';
+
+    const text = String(value).toLowerCase();
+
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  };
+
   const keteranganBodyTemplate = (row) => {
     const value = row.keterangan || '-';
+    const normalizedValue = String(value).toLowerCase();
 
     let severity = 'info';
-    if (value === 'temuan') severity = 'success';
-    else if (value === 'hilang') severity = 'danger';
 
-    return <Tag value={value} severity={severity} />;
+    if (normalizedValue === 'temuan') {
+      severity = 'success';
+    } else if (normalizedValue === 'hilang') {
+      severity = 'danger';
+    }
+
+    return (
+      <Tag
+        value={formatBadgeText(value)}
+        severity={severity}
+      />
+    );
   };
 
   const statusBodyTemplate = (row) => {
     const value = row.status || 'baru';
+    const normalizedValue = String(value).toLowerCase();
 
     let severity = 'warning';
-    if (value === 'baru') severity = 'warning';
-    else if (value === 'proses') severity = 'info';
-    else if (value === 'selesai') severity = 'success';
 
-    return <Tag value={value} severity={severity} />;
+    if (normalizedValue === 'baru') {
+      severity = 'warning';
+    } else if (normalizedValue === 'proses') {
+      severity = 'info';
+    } else if (normalizedValue === 'selesai') {
+      severity = 'success';
+    }
+
+    return (
+      <Tag
+        value={formatBadgeText(value)}
+        severity={severity}
+      />
+    );
   };
 
   const fotoBodyTemplate = (row) => {

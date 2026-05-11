@@ -158,3 +158,30 @@ h2 {
 .login-password-field .p-icon-field-right {
   width: 100% !important;
 }
+
+/* Logout button hover */
+.logout-hover-btn {
+  transition: all 0.2s ease-in-out !important;
+}
+
+.logout-hover-btn:hover {
+  background-color: #ef4444 !important;
+  border-color: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.logout-hover-btn:hover .p-button-icon,
+.logout-hover-btn:hover .p-button-label {
+  color: #ffffff !important;
+}
+
+.logout-hover-btn:active {
+  background-color: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+.logout-hover-btn:active .p-button-icon,
+.logout-hover-btn:active .p-button-label {
+  color: #ffffff !important;
+}

@@ -79,7 +79,10 @@ export default function Topbar({ toggleSidebar, toggleMobileSidebar }) {
       </div>
 
       <div className="flex align-items-center gap-3">
-        <div className="hidden md:flex align-items-center gap-2 cursor-pointer" onClick={() => router.push('/profile')}>
+        <div
+          className="hidden md:flex align-items-center gap-2 cursor-pointer"
+          onClick={() => router.push('/profile')}
+        >
           <Avatar
             label={avatarLabel}
             shape="circle"
@@ -94,9 +97,17 @@ export default function Topbar({ toggleSidebar, toggleMobileSidebar }) {
           />
 
           <div className="flex flex-column" style={{ lineHeight: 1.3 }}>
-            <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#1a2035', cursor: 'pointer' }}>
+            <span
+              style={{
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                color: '#1a2035',
+                cursor: 'pointer',
+              }}
+            >
               {user?.nama || 'User'}
             </span>
+
             <span style={{ fontSize: '0.72rem', color: '#8896a7' }}>
               {formatRole(user?.role)}
             </span>
@@ -109,6 +120,7 @@ export default function Topbar({ toggleSidebar, toggleMobileSidebar }) {
           severity="secondary"
           outlined
           size="small"
+          className="logout-hover-btn"
           onClick={logout}
         />
       </div>
