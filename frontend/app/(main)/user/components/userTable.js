@@ -5,7 +5,8 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 
 const UserTable = ({ users, loading, onEdit, onDelete }) => {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
   const roleLabels = {
     kepala_lab: 'Kepala Lab',
     teknisi: 'Teknisi',
@@ -19,29 +20,43 @@ const UserTable = ({ users, loading, onEdit, onDelete }) => {
     nonaktif: 'Nonaktif'
   };
 
-  const renderField = (value) => value && value.trim() !== '' ? value : '-';
+  const renderField = (value) => {
+    return value && String(value).trim() !== '' ? value : '-';
+  };
 
   const renderPhotos = (row) => {
     if (!row.user_faces || row.user_faces.length === 0) return '-';
 
-    const getPhotoName = (photo) => {
-      const value = photo.image_name || photo.image_path || '';
-      return String(value).split(/[\\/]/).pop();
-    };
-
     return (
       <div className="flex flex-wrap gap-1">
         {row.user_faces.map((photo, idx) => {
-          const photoName = getPhotoName(photo);
+          const photoName = photo.image_name || photo.image_path;
+
           if (!photoName) return null;
+
+          const fileNameOnly = String(photoName).split(/[\\/]/).pop();
+
+          const photoUrl = `/api/image-proxy?face_label=${encodeURIComponent(row.face_label)}&filename=${encodeURIComponent(photoName)}`;
 
           return (
             <img
               key={idx}
-              src={`${API_URL}/uploads/${row.face_label}/${encodeURIComponent(photoName)}`}
-              alt={photoName}
-              style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
-              onError={(e) => e.target.src = 'https://via.placeholder.com/50?text=No+Photo'}
+              src={photoUrl}
+              alt={fileNameOnly}
+              title={photoUrl}
+              style={{
+                width: '50px',
+                height: '50px',
+                objectFit: 'cover',
+                borderRadius: '4px',
+                border: '1px solid #ddd',
+                backgroundColor: '#f3f4f6'
+              }}
+              onError={(e) => {
+                console.log('GAGAL LOAD FOTO:', photoUrl);
+                e.currentTarget.onerror = null;
+                e.currentTarget.style.display = 'none';
+              }}
             />
           );
         })}
@@ -76,11 +91,21 @@ const UserTable = ({ users, loading, onEdit, onDelete }) => {
         header="Aksi"
         body={(row) => (
           <div className="flex gap-2">
-            <Button icon="pi pi-pencil" size="small" severity="warning" onClick={() => onEdit(row)} />
-            <Button icon="pi pi-trash" size="small" severity="danger" onClick={() => onDelete(row)} />
+            <Button
+              icon="pi pi-pencil"
+              size="small"
+              severity="warning"
+              onClick={() => onEdit(row)}
+            />
+            <Button
+              icon="pi pi-trash"
+              size="small"
+              severity="danger"
+              onClick={() => onDelete(row)}
+            />
           </div>
         )}
-        style={{ width: "150px" }}
+        style={{ width: '150px' }}
       />
     </DataTable>
   );
