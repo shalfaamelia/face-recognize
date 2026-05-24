@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Card } from 'primereact/card';
 import ToastNotifier from '@/app/components/toastNotifier';
 import HeaderBar from '@/app/components/headerbar';
+import FilterTanggal from '@/app/components/filterTanggal';
 import LaporanPeminjamanTable from './components/laporanPeminjamanTable';
 import { getLaporanPeminjaman } from '@/services/laporanPeminjamanService';
 import dynamic from "next/dynamic";
@@ -20,6 +21,9 @@ export default function Page() {
   const [laporan, setLaporan] = useState([]);
   const [allLaporan, setAllLaporan] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const toastRef = useRef(null);
   const [adjustDialog, setAdjustDialog] = useState(false);
   const [pdfUrl, setPdfUrl] = useState("");
@@ -35,12 +39,35 @@ export default function Page() {
     });
   };
 
-  const fetchData = async () => {
+  const formatDateParam = (date) => {
+    if (!date) return '';
+    const value = new Date(date);
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const applySearch = (data, keyword) => {
+    if (!keyword || keyword.trim() === '') return data;
+
+    const lowerKeyword = keyword.toLowerCase();
+    return data.filter((item) =>
+      item.nama?.toLowerCase().includes(lowerKeyword) ||
+      item.nim?.toLowerCase().includes(lowerKeyword) ||
+      item.prodi?.toLowerCase().includes(lowerKeyword) ||
+      item.kelas?.toLowerCase().includes(lowerKeyword) ||
+      item.status?.toLowerCase().includes(lowerKeyword) ||
+      item.keterangan?.toLowerCase().includes(lowerKeyword)
+    );
+  };
+
+  const fetchData = async (filters = {}) => {
     setLoading(true);
     try {
-      const data = await getLaporanPeminjaman();
+      const data = await getLaporanPeminjaman(filters);
       setAllLaporan(data);
-      setLaporan(data);
+      setLaporan(applySearch(data, searchKeyword));
     } catch (err) {
       console.error(err);
       showToast('error', 'Gagal', err.message || 'Terjadi kesalahan saat mengambil laporan');
@@ -54,44 +81,63 @@ export default function Page() {
   }, []);
 
   const handleSearch = (keyword) => {
-    if (!keyword || keyword.trim() === '') {
-      setLaporan(allLaporan);
-      return;
-    }
+    setSearchKeyword(keyword);
+    setLaporan(applySearch(allLaporan, keyword));
+  };
 
-    const lowerKeyword = keyword.toLowerCase();
+  const handleDateFilter = () => {
+    fetchData({
+      startDate: formatDateParam(startDate),
+      endDate: formatDateParam(endDate),
+    });
+  };
 
-    const filtered = allLaporan.filter((item) =>
-      item.nama?.toLowerCase().includes(lowerKeyword) ||
-      item.nim?.toLowerCase().includes(lowerKeyword) ||
-      item.prodi?.toLowerCase().includes(lowerKeyword) ||
-      item.kelas?.toLowerCase().includes(lowerKeyword) ||
-      item.status?.toLowerCase().includes(lowerKeyword) ||
-      item.keterangan?.toLowerCase().includes(lowerKeyword)
-    );
-
-    setLaporan(filtered);
+  const resetFilter = () => {
+    setStartDate(null);
+    setEndDate(null);
+    fetchData();
   };
 
   return (
     <Card>
       <ToastNotifier ref={toastRef} />
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
-        <h3 className="text-xl font-semibold">Laporan Peminjaman Lab</h3>
+      <div className="mb-3">
+        <h3 className="text-xl font-semibold" style={{ margin: '0 0 1.25rem 0' }}>
+          Laporan Peminjaman Lab
+        </h3>
 
-        <div className="flex flex-col md:flex-row gap-2 md:items-center md:ml-auto">
-          <Button
-            icon="pi pi-print"
-            className="p-button-warning mt-3"
-            tooltip="Cetak Data"
-            onClick={() => setAdjustDialog(true)}
-          />
-          <HeaderBar
-            title=""
-            placeholder="Cari nama, NIM, prodi, kelas, status..."
-            onSearch={handleSearch}
-          />
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap',
+          }}
+        >
+          <FilterTanggal
+              startDate={startDate}
+              endDate={endDate}
+              setStartDate={setStartDate}
+              setEndDate={setEndDate}
+              handleDateFilter={handleDateFilter}
+              resetFilter={resetFilter}
+            />
+
+          <div className="flex gap-2" style={{ alignItems: 'flex-end', marginLeft: 'auto' }}>
+            <Button
+              icon="pi pi-print"
+              className="p-button-warning report-print-button mb-2"
+              tooltip="Cetak Data"
+              onClick={() => setAdjustDialog(true)}
+            />
+            <HeaderBar
+              title=""
+              placeholder="Cari nama, NIM, prodi, kelas, status..."
+              onSearch={handleSearch}
+            />
+          </div>
         </div>
       </div>
 

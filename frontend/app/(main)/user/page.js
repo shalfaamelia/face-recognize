@@ -19,6 +19,7 @@ import {
 
 export default function Page() {
   const [users, setUsers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [importDialogVisible, setImportDialogVisible] = useState(false);
@@ -34,6 +35,7 @@ export default function Page() {
     try {
       const data = await getUsers();
       setUsers(data);
+      setAllUsers(data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -46,15 +48,17 @@ export default function Page() {
   }, []);
 
   const handleSearch = (keyword) => {
-    if (!keyword) {
-      setUsers(users);
-    } else {
-      const filtered = users.filter((item) =>
-        item.kode?.toLowerCase().includes(keyword.toLowerCase()) ||
-        item.nama?.toLowerCase().includes(keyword.toLowerCase())
-      );
-      setUsers(filtered);
+    if (!keyword || keyword.trim() === '') {
+      setUsers(allUsers);
+      return;
     }
+
+    const lowerKeyword = keyword.toLowerCase();
+    const filtered = allUsers.filter((item) =>
+      item.kode?.toLowerCase().includes(lowerKeyword) ||
+      item.nama?.toLowerCase().includes(lowerKeyword)
+    );
+    setUsers(filtered);
   };
 
   const handleSubmit = async () => {
@@ -167,11 +171,20 @@ export default function Page() {
     <Card>
       <ToastNotifier ref={toastRef} />
       <ConfirmDialog />
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3">
+        <h3 className="text-xl font-semibold" style={{ margin: '0 0 0.2rem 0' }}>
+          Manajemen User
+        </h3>
 
-        <h3 className="text-xl font-semibold">Manajemen User</h3>
-
-        <div className="flex items-center ml-auto gap-2">
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'flex-end',
+            gap: '1rem',
+            flexWrap: 'wrap',
+          }}
+        >
           <HeaderBar
             title=""
             placeholder="Cari berdasarkan nama atau kode..."
@@ -181,14 +194,7 @@ export default function Page() {
               setEditingUser(null);
               setDialogVisible(true);
             }}
-          />
-          <Button
-            type="button"
-            label="Import Excel"
-            icon="pi pi-upload"
-            severity="success"
-            size="small"
-            onClick={() => setImportDialogVisible(true)}
+            onImportClick={() => setImportDialogVisible(true)}
           />
         </div>
       </div>

@@ -4,6 +4,21 @@ from db import get_db_connection
 
 monitoring_bp = Blueprint('monitoring', __name__)
 
+
+def append_date_filter(query, params, column):
+    start_date = request.args.get('startDate')
+    end_date = request.args.get('endDate')
+
+    if start_date:
+        query += f" AND DATE({column}) >= %s"
+        params.append(start_date)
+
+    if end_date:
+        query += f" AND DATE({column}) <= %s"
+        params.append(end_date)
+
+    return query, params
+
 # ===============================
 # GET ALL LOGS
 # ===============================
@@ -12,11 +27,16 @@ def get_monitoring():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     try:
-        cursor.execute("""
+        query = """
             SELECT id, kode, nama, nim, prodi, kelas, masuk
             FROM log_masuk
-            ORDER BY masuk DESC
-        """)
+            WHERE 1=1
+        """
+        params = []
+        query, params = append_date_filter(query, params, 'masuk')
+        query += " ORDER BY masuk DESC"
+
+        cursor.execute(query, tuple(params))
         logs = cursor.fetchall()
         for log in logs:
             if log.get('masuk'):

@@ -21,13 +21,8 @@ export default function LoginPage() {
   });
   const [loading, setLoading] = useState(false);
 
-  const showToast = (severity, summary, detail) => {
-    toastRef.current?.show?.({
-      severity,
-      summary,
-      detail,
-      life: 3000,
-    });
+  const showToast = (status, message) => {
+    toastRef.current?.showToast(status, message);
   };
 
   const handleSubmit = async (e) => {
@@ -36,11 +31,17 @@ export default function LoginPage() {
 
     try {
       await login(form.email, form.password);
-      showToast('success', 'Berhasil', 'Login berhasil');
-      router.replace('/dashboard');
+      showToast('00', 'Login berhasil');
+
+      setTimeout(() => {
+        router.replace('/dashboard');
+      }, 1000);
     } catch (err) {
-      showToast('error', 'Gagal', err.message || 'Login gagal');
-    } finally {
+      showToast('01', err.message || 'Login gagal');
+      setForm({
+        email: '',
+        password: '',
+      });
       setLoading(false);
     }
   };

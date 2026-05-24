@@ -107,6 +107,13 @@ h2 {
   font-weight: 600 !important;
 }
 
+.report-print-button {
+  height: 3rem !important;
+  min-width: 3rem !important;
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+}
+
 /* Stat card helper class */
 .stat-card {
   background: #ffffff;

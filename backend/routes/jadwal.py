@@ -186,7 +186,7 @@ def get_jadwal():
                TIME_FORMAT(jam_mulai, '%H:%i') AS jam_mulai,
                TIME_FORMAT(jam_selesai, '%H:%i') AS jam_selesai
         FROM jadwal_praktikum
-        ORDER BY hari, jam_mulai
+        ORDER BY id DESC
     """)
     jadwal = cursor.fetchall()
     cursor.close()

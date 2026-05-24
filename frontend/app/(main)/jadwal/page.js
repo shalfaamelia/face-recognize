@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
-import { Button } from 'primereact/button';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import ToastNotifier from '@/app/components/toastNotifier';
 import HeaderBar from "@/app/components/headerbar";
@@ -18,6 +17,7 @@ import {
 
 export default function Page() {
     const [jadwal, setJadwal] = useState([]);
+    const [allJadwal, setAllJadwal] = useState([]);
     const [loading, setLoading] = useState(false);
     const [dialogVisible, setDialogVisible] = useState(false);
     const [form, setForm] = useState({});
@@ -30,6 +30,7 @@ export default function Page() {
         try {
             const data = await getJadwal();
             setJadwal(data);
+            setAllJadwal(data);
         } catch (err) {
             console.error(err);
         } finally {
@@ -38,6 +39,19 @@ export default function Page() {
     };
 
     useEffect(() => { fetchData(); }, []);
+
+    const handleSearch = (keyword) => {
+        if (!keyword || keyword.trim() === '') {
+            setJadwal(allJadwal);
+            return;
+        }
+
+        const lowerKeyword = keyword.toLowerCase();
+        setJadwal(allJadwal.filter(item =>
+            item.kode?.toLowerCase().includes(lowerKeyword) ||
+            item.nama?.toLowerCase().includes(lowerKeyword)
+        ));
+    };
 
     const handleSubmit = async () => {
         try {
@@ -106,11 +120,20 @@ export default function Page() {
         <Card>
             <ToastNotifier ref={toastRef} />
             <ConfirmDialog />
-            <div className="flex items-center justify-between mb-3">
+            <div className="mb-3">
+                <h3 className="text-xl font-semibold" style={{ margin: '0 0 0.2rem 0' }}>
+                    Manajemen Jadwal Praktikum
+                </h3>
 
-                <h3 className="text-xl font-semibold">Manajemen Jadwal Praktikum</h3>
-
-                <div className="flex items-center ml-auto gap-2">
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        justifyContent: 'flex-end',
+                        gap: '1rem',
+                        flexWrap: 'wrap',
+                    }}
+                >
                     <input
                         ref={fileInputRef}
                         type="file"
@@ -121,22 +144,9 @@ export default function Page() {
                     <HeaderBar
                         title=""
                         placeholder="Cari berdasarkan nama atau kode..."
-                        onSearch={(keyword) => {
-                            if (!keyword) fetchData();
-                            else setJadwal(jadwal.filter(item =>
-                                item.kode?.toLowerCase().includes(keyword.toLowerCase()) ||
-                                item.nama?.toLowerCase().includes(keyword.toLowerCase())
-                            ));
-                        }}
+                        onSearch={handleSearch}
                         onAddClick={() => { setForm({}); setEditing(false); setDialogVisible(true); }}
-                    />
-                    <Button
-                        type="button"
-                        label="Import Excel"
-                        icon="pi pi-upload"
-                        severity="success"
-                        size="small"
-                        onClick={() => fileInputRef.current?.click()}
+                        onImportClick={() => fileInputRef.current?.click()}
                     />
                 </div>
             </div>

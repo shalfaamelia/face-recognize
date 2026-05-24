@@ -30,6 +30,21 @@ def format_laporan_barang_row(row):
     return row
 
 
+def append_date_filter(query, params):
+    start_date = request.args.get('startDate')
+    end_date = request.args.get('endDate')
+
+    if start_date:
+        query += " WHERE tanggal >= %s" if "WHERE" not in query.upper() else " AND tanggal >= %s"
+        params.append(start_date)
+
+    if end_date:
+        query += " WHERE tanggal <= %s" if "WHERE" not in query.upper() else " AND tanggal <= %s"
+        params.append(end_date)
+
+    return query, params
+
+
 # =========================
 # CREATE LAPORAN BARANG (MOBILE)
 # =========================
@@ -257,13 +272,17 @@ def get_all_laporan_barang():
     cursor = conn.cursor(dictionary=True)
 
     try:
-        cursor.execute("""
+        query = """
             SELECT id, user_id, nama, nim, kelas, prodi, tanggal,
                    keterangan, deskripsi, foto, status,
                    created_at, updated_at
             FROM laporan_barang
-            ORDER BY tanggal DESC, id DESC
-        """)
+        """
+        params = []
+        query, params = append_date_filter(query, params)
+        query += " ORDER BY tanggal DESC, id DESC"
+
+        cursor.execute(query, tuple(params))
         rows = cursor.fetchall()
 
         rows = [format_laporan_barang_row(row) for row in rows]

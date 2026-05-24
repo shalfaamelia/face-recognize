@@ -3,7 +3,7 @@
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 
-const HeaderBar = ({ title, placeholder, onSearch, onAddClick }) => {
+const HeaderBar = ({ title, placeholder, onSearch, onAddClick, onImportClick }) => {
   return (
     <div className="flex justify-content-between align-items-center mt-4 mb-2 gap-3 flex-wrap">
       <h4 className="m-0">{title}</h4>
@@ -19,6 +19,16 @@ const HeaderBar = ({ title, placeholder, onSearch, onAddClick }) => {
 
         {onAddClick && (
           <Button label="Tambah" icon="pi pi-plus" size="small" onClick={onAddClick} />
+        )}
+
+        {onImportClick && (
+          <Button
+            label="Import Excel"
+            icon="pi pi-upload"
+            severity="success"
+            size="small"
+            onClick={onImportClick}
+          />
         )}
       </div>
     </div>
