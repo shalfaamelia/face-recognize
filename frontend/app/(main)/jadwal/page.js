@@ -22,6 +22,7 @@ export default function Page() {
     const [dialogVisible, setDialogVisible] = useState(false);
     const [form, setForm] = useState({});
     const [editing, setEditing] = useState(false);
+    const [errors, setErrors] = useState({});
     const toastRef = useRef(null);
     const fileInputRef = useRef(null);
 
@@ -53,7 +54,25 @@ export default function Page() {
         ));
     };
 
+    const validateForm = () => {
+        const newErrors = {};
+        if (!form.nama?.trim()) newErrors.nama = 'Nama mata kuliah harus diisi';
+        if (!form.dosen?.trim()) newErrors.dosen = 'Dosen harus diisi';
+        if (!form.kelas?.trim()) newErrors.kelas = 'Kelas harus diisi';
+        if (!form.hari) newErrors.hari = 'Hari harus dipilih';
+        if (!form.jam_mulai?.trim()) newErrors.jam_mulai = 'Jam mulai harus diisi';
+        if (!form.jam_selesai?.trim()) newErrors.jam_selesai = 'Jam selesai harus diisi';
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = async () => {
+        if (!validateForm()) {
+            toastRef.current?.showToast('99', 'Silakan lengkapi semua field yang wajib diisi.');
+            return;
+        }
+
         try {
             if (editing) await updateJadwal(form.id, form);
             else await createJadwal(form);
@@ -93,6 +112,7 @@ export default function Page() {
     const handleEdit = (row) => {
         setForm(row);
         setEditing(true);
+        setErrors({});
         setDialogVisible(true);
     };
 
@@ -145,7 +165,12 @@ export default function Page() {
                         title=""
                         placeholder="Cari berdasarkan nama atau kode..."
                         onSearch={handleSearch}
-                        onAddClick={() => { setForm({}); setEditing(false); setDialogVisible(true); }}
+                        onAddClick={() => {
+                            setForm({});
+                            setEditing(false);
+                            setErrors({});
+                            setDialogVisible(true);
+                        }}
                         onImportClick={() => fileInputRef.current?.click()}
                     />
                 </div>
@@ -160,10 +185,15 @@ export default function Page() {
 
             <JadwalForm
                 visible={dialogVisible}
-                onHide={() => setDialogVisible(false)}
-                form={form} setForm={setForm}
+                onHide={() => {
+                    setDialogVisible(false);
+                    setErrors({});
+                }}
+                form={form}
+                setForm={setForm}
                 onSubmit={handleSubmit}
                 editing={editing}
+                errors={errors}
             />
         </Card>
     );

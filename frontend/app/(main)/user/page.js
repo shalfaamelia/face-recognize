@@ -62,6 +62,11 @@ export default function Page() {
   };
 
   const handleSubmit = async () => {
+    if (!validateForm()) {
+      toastRef.current?.showToast('99', 'Silakan lengkapi semua field yang wajib diisi.');
+      return;
+    }
+
     try {
       if (editingUser) {
         await updateUser(editingUser.id, form);
@@ -122,7 +127,6 @@ export default function Page() {
     }
   };
 
-  // Edit
   const handleEdit = (user) => {
     // Hanya kolom yang bisa diedit yang di-set ke form
     let editableForm = {
@@ -143,7 +147,29 @@ export default function Page() {
 
     setForm(editableForm);
     setEditingUser(user);
+    setErrors({});
     setDialogVisible(true);
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!form.nama?.trim()) newErrors.nama = 'Nama harus diisi';
+    if (!form.role) newErrors.role = 'Role harus dipilih';
+    
+    if (form.role === 'mahasiswa') {
+      if (!form.nim?.trim()) newErrors.nim = 'NIM harus diisi';
+      if (!form.prodi?.trim()) newErrors.prodi = 'Prodi harus diisi';
+      if (!form.kelas?.trim()) newErrors.kelas = 'Kelas harus diisi';
+    } else if (form.role !== 'mahasiswa') {
+      if (!form.nip?.trim()) newErrors.nip = 'NIP harus diisi';
+      if (!form.email?.trim()) newErrors.email = 'Email harus diisi';
+      if (!editingUser && !form.password?.trim()) newErrors.password = 'Password harus diisi';
+    }
+    
+    if (!form.status) newErrors.status = 'Status harus dipilih';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   // Delete
@@ -192,6 +218,7 @@ export default function Page() {
             onAddClick={() => {
               setForm({});
               setEditingUser(null);
+              setErrors({});
               setDialogVisible(true);
             }}
             onImportClick={() => setImportDialogVisible(true)}
@@ -208,7 +235,10 @@ export default function Page() {
 
       <UserForm
         visible={dialogVisible}
-        onHide={() => setDialogVisible(false)}
+        onHide={() => {
+          setDialogVisible(false);
+          setErrors({});
+        }}
         form={form}
         setForm={setForm}
         onSubmit={handleSubmit}

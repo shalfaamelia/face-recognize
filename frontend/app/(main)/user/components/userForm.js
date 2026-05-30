@@ -4,6 +4,8 @@ import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
+import { classNames } from 'primereact/utils';
+import { useEffect } from 'react';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -17,7 +19,10 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
   ];
 
   const inputClass = (field) =>
-    errors[field] ? 'p-invalid w-full mt-2' : 'w-full mt-2';
+    classNames('w-full mt-2', { 'p-invalid': errors?.[field] });
+
+  const dropdownClass = (field) =>
+    classNames('w-full', { 'p-invalid': errors?.[field] });
 
   const onRoleChange = async (e) => {
     const role = e.value;
@@ -65,9 +70,11 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
           <label>Nama</label>
           <InputText
             className={inputClass('nama')}
+            placeholder="Masukkan nama"
             value={form.nama}
             onChange={(e) => setForm({ ...form, nama: e.target.value })}
           />
+          {errors?.nama && <small className="p-error">{errors.nama}</small>}
         </div>
 
         {/* Role hanya saat tambah */}
@@ -75,12 +82,13 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
           <div>
             <label>Role</label>
             <Dropdown
-              className="w-full mt-2"
+              className={dropdownClass('role')}
               value={form.role}
               options={roles}
               onChange={onRoleChange}
               placeholder="Pilih Role"
             />
+            {errors?.role && <small className="p-error">{errors.role}</small>}
           </div>
         )}
 
@@ -90,26 +98,32 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
             <div>
               <label>NIM</label>
               <InputText
-                className="w-full mt-2"
+                className={inputClass('nim')}
+                placeholder="Masukkan NIM"
                 value={form.nim}
                 onChange={(e) => setForm({ ...form, nim: e.target.value })}
               />
+              {errors?.nim && <small className="p-error">{errors.nim}</small>}
             </div>
             <div>
               <label>Prodi</label>
               <InputText
-                className="w-full mt-2"
+                className={inputClass('prodi')}
+                placeholder="Masukkan program studi"
                 value={form.prodi}
                 onChange={(e) => setForm({ ...form, prodi: e.target.value })}
               />
+              {errors?.prodi && <small className="p-error">{errors.prodi}</small>}
             </div>
             <div>
               <label>Kelas</label>
               <InputText
-                className="w-full mt-2"
+                className={inputClass('kelas')}
+                placeholder="Masukkan kelas"
                 value={form.kelas}
                 onChange={(e) => setForm({ ...form, kelas: e.target.value })}
               />
+              {errors?.kelas && <small className="p-error">{errors.kelas}</small>}
             </div>
           </>
         )}
@@ -120,18 +134,22 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
             <div>
               <label>NIP</label>
               <InputText
-                className="w-full mt-2"
+                className={inputClass('nip')}
+                placeholder="Masukkan NIP"
                 value={form.nip}
                 onChange={(e) => setForm({ ...form, nip: e.target.value })}
               />
+              {errors?.nip && <small className="p-error">{errors.nip}</small>}
             </div>
             <div>
               <label>Email</label>
               <InputText
-                className="w-full mt-2"
+                className={inputClass('email')}
+                placeholder="Masukkan email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
+              {errors?.email && <small className="p-error">{errors.email}</small>}
             </div>
             {/* Password hanya saat tambah */}
             {!editingUser && (
@@ -139,10 +157,12 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
                 <label>Password</label>
                 <InputText
                   type="password"
-                  className="w-full mt-2"
+                  className={inputClass('password')}
+                  placeholder="Masukkan password"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                 />
+                {errors?.password && <small className="p-error">{errors.password}</small>}
               </div>
             )}
           </>
@@ -152,7 +172,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
         <div>
           <label>Status</label>
           <Dropdown
-            className="w-full mt-2"
+            className={dropdownClass('status')}
             placeholder="Pilih Status"
             value={form.status}
             options={[
@@ -161,6 +181,7 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
             ]}
             onChange={(e) => setForm({ ...form, status: e.value })}
           />
+          {errors?.status && <small className="p-error">{errors.status}</small>}
         </div>
 
         {/* Upload Foto hanya saat tambah */}

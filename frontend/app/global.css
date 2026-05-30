@@ -101,6 +101,33 @@ h2 {
   box-shadow: 0 0 0 3px rgba(74,108,247,0.12) !important;
 }
 
+/* Validation error styling */
+.p-inputtext.p-invalid {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important;
+}
+
+.p-inputtext.p-invalid:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.2) !important;
+}
+
+.p-dropdown.p-invalid {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.12) !important;
+}
+
+.p-dropdown.p-invalid:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.2) !important;
+}
+
+.p-error {
+  color: #ef4444 !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+}
+
 .p-tag {
   border-radius: 6px !important;
   font-size: 0.72rem !important;
