@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { Dropdown } from 'primereact/dropdown';
 import ToastNotifier from '@/app/components/toastNotifier';
 import HeaderBar from "@/app/components/headerbar";
 import JadwalTable from './components/jadwalTable';
@@ -23,6 +24,8 @@ export default function Page() {
     const [form, setForm] = useState({});
     const [editing, setEditing] = useState(false);
     const [errors, setErrors] = useState({});
+    const [selectedDay, setSelectedDay] = useState(null);
+    const [searchKeyword, setSearchKeyword] = useState('');
     const toastRef = useRef(null);
     const fileInputRef = useRef(null);
 
@@ -42,16 +45,33 @@ export default function Page() {
     useEffect(() => { fetchData(); }, []);
 
     const handleSearch = (keyword) => {
-        if (!keyword || keyword.trim() === '') {
-            setJadwal(allJadwal);
-            return;
+        setSearchKeyword(keyword);
+        applyFilters(keyword, selectedDay);
+    };
+
+    const handleDayFilter = (day) => {
+        setSelectedDay(day);
+        applyFilters(searchKeyword, day);
+    };
+
+    const applyFilters = (keyword, day) => {
+        let filtered = allJadwal;
+
+        // Filter by day
+        if (day) {
+            filtered = filtered.filter((item) => item.hari === day);
         }
 
-        const lowerKeyword = keyword.toLowerCase();
-        setJadwal(allJadwal.filter(item =>
-            item.kode?.toLowerCase().includes(lowerKeyword) ||
-            item.nama?.toLowerCase().includes(lowerKeyword)
-        ));
+        // Filter by keyword
+        if (keyword && keyword.trim() !== '') {
+            const lowerKeyword = keyword.toLowerCase();
+            filtered = filtered.filter((item) =>
+                item.kode?.toLowerCase().includes(lowerKeyword) ||
+                item.nama?.toLowerCase().includes(lowerKeyword)
+            );
+        }
+
+        setJadwal(filtered);
     };
 
     const validateForm = () => {
@@ -149,11 +169,31 @@ export default function Page() {
                     style={{
                         display: 'flex',
                         alignItems: 'flex-end',
-                        justifyContent: 'flex-end',
+                        justifyContent: 'space-between',
                         gap: '1rem',
                         flexWrap: 'wrap',
                     }}
                 >
+                    <div style={{ minWidth: '200px' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Filter Hari</label>
+                        <Dropdown
+                            value={selectedDay}
+                            onChange={(e) => handleDayFilter(e.value)}
+                            options={[
+                                { label: 'Semua Hari', value: null },
+                                { label: 'Senin', value: 'Senin' },
+                                { label: 'Selasa', value: 'Selasa' },
+                                { label: 'Rabu', value: 'Rabu' },
+                                { label: 'Kamis', value: 'Kamis' },
+                                { label: 'Jumat', value: 'Jumat' },
+                                { label: 'Sabtu', value: 'Sabtu' },
+                            ]}
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Pilih hari"
+                            style={{ width: '100%' }}
+                        />
+                    </div>
                     <input
                         ref={fileInputRef}
                         type="file"

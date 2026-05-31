@@ -91,7 +91,44 @@ def get_monitoring():
 # ===============================
 @monitoring_bp.route('/laporan/akses', methods=['GET'])
 def get_laporan_akses_lab():
-    return get_monitoring()
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        query = """
+            SELECT id, kode, nama, nim, prodi, kelas, masuk, terlambat_menit
+            FROM (
+                SELECT id, kode, nama, nim, prodi, kelas, masuk, NULL AS terlambat_menit
+                FROM log_masuk
+                UNION ALL
+                SELECT id, kode, nama, nim, prodi, kelas, masuk, terlambat_menit
+                FROM log_terlambat
+            ) AS combined
+            WHERE 1=1
+        """
+
+        params = []
+        query, params = append_date_filter(query, params, 'masuk')
+        query += " ORDER BY masuk DESC"
+
+        cursor.execute(query, tuple(params))
+        logs = cursor.fetchall()
+
+        for log in logs:
+            if log.get('masuk'):
+                log['masuk'] = log['masuk'].strftime('%Y/%m/%d %H:%M:%S')
+
+            menit = log.get('terlambat_menit')
+            log['terlambat'] = f"{menit} menit" if menit is not None else "-"
+
+    except Exception as e:
+        return jsonify({"message": f"Failed to fetch laporan akses logs: {str(e)}"}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return jsonify(logs)
 
 
 @monitoring_bp.route('/monitoring_user', methods=['GET'])

@@ -5,6 +5,7 @@ import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Dialog } from 'primereact/dialog';
+import { Dropdown } from 'primereact/dropdown';
 import ToastNotifier from '@/app/components/toastNotifier';
 import HeaderBar from "@/app/components/headerbar";
 import UserTable from './components/userTable';
@@ -27,6 +28,8 @@ export default function Page() {
   const [form, setForm] = useState({});
   const [editingUser, setEditingUser] = useState(null);
   const [errors, setErrors] = useState({});
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [searchKeyword, setSearchKeyword] = useState('');
 
   const toastRef = useRef(null);
 
@@ -48,16 +51,32 @@ export default function Page() {
   }, []);
 
   const handleSearch = (keyword) => {
-    if (!keyword || keyword.trim() === '') {
-      setUsers(allUsers);
-      return;
+    setSearchKeyword(keyword);
+    applyFilters(keyword, selectedRole);
+  };
+
+  const handleRoleFilter = (role) => {
+    setSelectedRole(role);
+    applyFilters(searchKeyword, role);
+  };
+
+  const applyFilters = (keyword, role) => {
+    let filtered = allUsers;
+
+    // Filter by role
+    if (role) {
+      filtered = filtered.filter((item) => item.role === role);
     }
 
-    const lowerKeyword = keyword.toLowerCase();
-    const filtered = allUsers.filter((item) =>
-      item.kode?.toLowerCase().includes(lowerKeyword) ||
-      item.nama?.toLowerCase().includes(lowerKeyword)
-    );
+    // Filter by keyword
+    if (keyword && keyword.trim() !== '') {
+      const lowerKeyword = keyword.toLowerCase();
+      filtered = filtered.filter((item) =>
+        item.kode?.toLowerCase().includes(lowerKeyword) ||
+        item.nama?.toLowerCase().includes(lowerKeyword)
+      );
+    }
+
     setUsers(filtered);
   };
 
@@ -203,11 +222,30 @@ export default function Page() {
           style={{
             display: 'flex',
             alignItems: 'flex-end',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
             gap: '1rem',
             flexWrap: 'wrap',
           }}
         >
+          <div style={{ minWidth: '200px' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>Filter Role</label>
+            <Dropdown
+              value={selectedRole}
+              onChange={(e) => handleRoleFilter(e.value)}
+              options={[
+                { label: 'Semua Role', value: null },
+                { label: 'Mahasiswa', value: 'mahasiswa' },
+                { label: 'Kepala Lab', value: 'kepala_lab' },
+                { label: 'Teknisi', value: 'teknisi' },
+                { label: 'Sarpras', value: 'sarpras' },
+                { label: 'Dosen', value: 'dosen' },
+              ]}
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Pilih role"
+              style={{ width: '100%' }}
+            />
+          </div>
           <HeaderBar
             title=""
             placeholder="Cari berdasarkan nama atau kode..."

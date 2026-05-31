@@ -25,6 +25,7 @@ const LaporanAksesTable = ({ laporanAkses, loading }) => {
         <Column field="prodi" header="Prodi" body={(row) => renderField(row.prodi)} />
         <Column field="kelas" header="Kelas" body={(row) => renderField(row.kelas)} />
         <Column field="masuk" header="Waktu Akses" body={(row) => renderField(row.masuk)} />
+        <Column field="terlambat" header="Terlambat" body={(row) => renderField(row.terlambat)} />
       </DataTable>
   );
 };
