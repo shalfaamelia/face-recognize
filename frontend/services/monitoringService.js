@@ -7,6 +7,7 @@ const buildDateQuery = (filters = {}) => {
 
   if (filters.startDate) params.append('startDate', filters.startDate);
   if (filters.endDate) params.append('endDate', filters.endDate);
+  if (filters.type) params.append('type', filters.type);
 
   const query = params.toString();
   return query ? `?${query}` : '';
@@ -17,8 +18,10 @@ export async function getMonitoring(filters = {}) {
     method: 'GET',
     headers: getAuthHeaders(),
   });
+
   if (!res.ok) {
     throw new Error('Failed to fetch monitoring data');
   }
+
   return res.json();
 }
