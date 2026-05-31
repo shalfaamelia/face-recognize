@@ -171,13 +171,18 @@ export default function Page() {
 
   const validateForm = () => {
     const newErrors = {};
+    const nimValue = String(form.nim || '').trim();
     const nipValue = String(form.nip || '').trim();
 
     if (!form.nama?.trim()) newErrors.nama = 'Nama harus diisi';
     if (!form.role) newErrors.role = 'Role harus dipilih';
     
     if (form.role === 'mahasiswa') {
-      if (!form.nim?.trim()) newErrors.nim = 'NIM harus diisi';
+      if (!nimValue) {
+        newErrors.nim = 'NIM harus diisi';
+      } else if (nimValue.length !== 9) {
+        newErrors.nim = 'NIM harus 9 karakter';
+      }
       if (!form.prodi?.trim()) newErrors.prodi = 'Prodi harus diisi';
       if (!form.kelas?.trim()) newErrors.kelas = 'Kelas harus diisi';
     } else if (form.role !== 'mahasiswa') {

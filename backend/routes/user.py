@@ -120,6 +120,22 @@ def validate_nip(nip, row_number=None, required=False):
 
     return nip
 
+def validate_nim(nim, row_number=None, required=False):
+    prefix = f"Baris {row_number}: " if row_number else ""
+
+    if nim is None or str(nim).strip() == '':
+        if required:
+            raise ValueError(f"{prefix}NIM wajib diisi")
+
+        return None
+
+    nim = str(nim).strip()
+
+    if len(nim) != 9:
+        raise ValueError(f"{prefix}NIM harus 9 karakter")
+
+    return nim
+
 def validate_password(password, row_number=None, required=False):
     prefix = f"Baris {row_number}: " if row_number else ""
 
@@ -278,6 +294,11 @@ def read_user_excel(file):
             row_number,
             required=role != 'mahasiswa'
         )
+        nim = validate_nim(
+            item.get('nim'),
+            row_number,
+            required=role == 'mahasiswa'
+        )
         password = validate_password(
             item.get('password'),
             row_number,
@@ -294,7 +315,7 @@ def read_user_excel(file):
             'row_number': row_number,
             'nama': item.get('nama'),
             'role': role,
-            'nim': item.get('nim') or None,
+            'nim': nim,
             'nip': nip,
             'prodi': item.get('prodi') or None,
             'kelas': item.get('kelas') or None,
@@ -550,6 +571,7 @@ def create_user():
         return jsonify({"message": "Role tidak valid"}), 400
 
     try:
+        nim = validate_nim(nim, required=role == 'mahasiswa')
         nip = validate_nip(nip, required=role != 'mahasiswa')
         password = validate_password(password, required=role != 'mahasiswa')
     except ValueError as e:
@@ -852,6 +874,7 @@ def update_user(user_id):
             return jsonify({"message": "Role tidak valid"}), 400
 
         try:
+            nim = validate_nim(nim, required=role == 'mahasiswa')
             nip = validate_nip(nip, required=role != 'mahasiswa')
             password = validate_password(password, required=False)
         except ValueError as e:

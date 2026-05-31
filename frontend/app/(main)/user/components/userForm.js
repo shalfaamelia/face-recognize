@@ -128,10 +128,11 @@ const UserForm = ({
                 className={inputClass('nim')}
                 placeholder="Masukkan NIM"
                 value={form.nim || ''}
+                maxLength={9}
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    nim: e.target.value,
+                    nim: e.target.value.slice(0, 9),
                   })
                 }
               />

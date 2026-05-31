@@ -1,7 +1,6 @@
 import { getAuthHeaders } from "./authService";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || API_URL;
 
 // ===============================
 // BUILD DATE QUERY (FILTER)
@@ -73,46 +72,4 @@ export async function getLaporanBarangImage(filename) {
   }
 
   throw new Error(`Gagal mengambil foto. Dicoba dari: ${errors.map(e => e.url).join(', ')}`);
-}
-
-// ===============================
-// CREATE LAPORAN BARANG (MOBILE)
-export async function createLaporanBarang(payload) {
-  const res = await fetch(`${API_URL}/laporan-barang`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: payload, // FormData: user_id, tanggal, keterangan, deskripsi, foto
-  });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || 'Gagal menambahkan laporan barang');
-  return data;
-}
-
-// ===============================
-// UPDATE LAPORAN BARANG (MOBILE)
-export async function updateLaporanBarang(id, payload) {
-  const res = await fetch(`${API_URL}/laporan-barang/${id}`, {
-    method: 'PUT',
-    headers: getAuthHeaders(),
-    body: payload, // FormData
-  });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || 'Gagal update laporan barang');
-  return data;
-}
-
-// ===============================
-// DELETE LAPORAN BARANG (MOBILE)
-export async function deleteLaporanBarang(id, userId) {
-  const url = `${API_URL}/laporan-barang/${id}?user_id=${userId}`;
-  const res = await fetch(url, {
-    method: 'DELETE',
-    headers: getAuthHeaders(),
-  });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || 'Gagal hapus laporan barang');
-  return data;
 }
