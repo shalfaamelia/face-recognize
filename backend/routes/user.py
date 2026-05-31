@@ -104,6 +104,38 @@ def hash_password_md5(password):
 
     return hashlib.md5(password.encode('utf-8')).hexdigest()
 
+def validate_nip(nip, row_number=None, required=False):
+    prefix = f"Baris {row_number}: " if row_number else ""
+
+    if nip is None or str(nip).strip() == '':
+        if required:
+            raise ValueError(f"{prefix}NIP wajib diisi")
+
+        return None
+
+    nip = str(nip).strip()
+
+    if not re.fullmatch(r'\d{10,20}', nip):
+        raise ValueError(f"{prefix}NIP harus berupa angka 10-20 digit")
+
+    return nip
+
+def validate_password(password, row_number=None, required=False):
+    prefix = f"Baris {row_number}: " if row_number else ""
+
+    if password is None or str(password).strip() == '':
+        if required:
+            raise ValueError(f"{prefix}Password wajib diisi")
+
+        return None
+
+    password = str(password)
+
+    if len(password) < 5:
+        raise ValueError(f"{prefix}Password minimal 5 karakter")
+
+    return password
+
 # ===============================
 # READ EXCEL WITHOUT OPENPYXL FALLBACK
 # ===============================
@@ -241,6 +273,17 @@ def read_user_excel(file):
                 f"Baris {row_number}: password wajib untuk role {role}"
             )
 
+        nip = validate_nip(
+            item.get('nip'),
+            row_number,
+            required=role != 'mahasiswa'
+        )
+        password = validate_password(
+            item.get('password'),
+            row_number,
+            required=role != 'mahasiswa'
+        )
+
         foto = [
             secure_filename(name.strip())
             for name in item.get('foto', '').split(',')
@@ -252,11 +295,11 @@ def read_user_excel(file):
             'nama': item.get('nama'),
             'role': role,
             'nim': item.get('nim') or None,
-            'nip': item.get('nip') or None,
+            'nip': nip,
             'prodi': item.get('prodi') or None,
             'kelas': item.get('kelas') or None,
             'email': item.get('email') or None,
-            'password': item.get('password') or None,
+            'password': password,
             'foto': foto,
         })
 
@@ -506,6 +549,12 @@ def create_user():
     if role not in ALLOWED_ROLES:
         return jsonify({"message": "Role tidak valid"}), 400
 
+    try:
+        nip = validate_nip(nip, required=role != 'mahasiswa')
+        password = validate_password(password, required=role != 'mahasiswa')
+    except ValueError as e:
+        return jsonify({"message": str(e)}), 400
+
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -513,9 +562,6 @@ def create_user():
         if role != 'mahasiswa':
             if not email:
                 return jsonify({"message": "Email wajib diisi"}), 400
-
-            if not password:
-                return jsonify({"message": "Password wajib diisi"}), 400
 
             cursor.execute(
                 "SELECT id FROM users WHERE email = %s",
@@ -532,6 +578,7 @@ def create_user():
         if role == 'mahasiswa':
             email = None
             password = None
+            nip = None
 
         kode = generate_user_code(role, cursor)
         face_label = generate_face_label(nama)
@@ -804,9 +851,16 @@ def update_user(user_id):
         if role not in ALLOWED_ROLES:
             return jsonify({"message": "Role tidak valid"}), 400
 
+        try:
+            nip = validate_nip(nip, required=role != 'mahasiswa')
+            password = validate_password(password, required=False)
+        except ValueError as e:
+            return jsonify({"message": str(e)}), 400
+
         if role == 'mahasiswa':
             email = None
             password = None
+            nip = None
         else:
             if password is not None and str(password).strip() != '':
                 password = hash_password_md5(password)

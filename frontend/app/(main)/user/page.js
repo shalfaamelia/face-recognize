@@ -171,6 +171,8 @@ export default function Page() {
 
   const validateForm = () => {
     const newErrors = {};
+    const nipValue = String(form.nip || '').trim();
+
     if (!form.nama?.trim()) newErrors.nama = 'Nama harus diisi';
     if (!form.role) newErrors.role = 'Role harus dipilih';
     
@@ -179,9 +181,17 @@ export default function Page() {
       if (!form.prodi?.trim()) newErrors.prodi = 'Prodi harus diisi';
       if (!form.kelas?.trim()) newErrors.kelas = 'Kelas harus diisi';
     } else if (form.role !== 'mahasiswa') {
-      if (!form.nip?.trim()) newErrors.nip = 'NIP harus diisi';
+      if (!nipValue) {
+        newErrors.nip = 'NIP harus diisi';
+      } else if (!/^\d{10,20}$/.test(nipValue)) {
+        newErrors.nip = 'NIP harus berupa angka 10-20 digit';
+      }
       if (!form.email?.trim()) newErrors.email = 'Email harus diisi';
-      if (!editingUser && !form.password?.trim()) newErrors.password = 'Password harus diisi';
+      if (!editingUser && !form.password?.trim()) {
+        newErrors.password = 'Password harus diisi';
+      } else if (form.password?.trim() && form.password.trim().length < 5) {
+        newErrors.password = 'Password minimal 5 karakter';
+      }
     }
 
     setErrors(newErrors);

@@ -184,10 +184,12 @@ const UserForm = ({
                 className={inputClass('nip')}
                 placeholder="Masukkan NIP"
                 value={form.nip || ''}
+                keyfilter="int"
+                maxLength={20}
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    nip: e.target.value,
+                    nip: e.target.value.replace(/\D/g, '').slice(0, 20),
                   })
                 }
               />
