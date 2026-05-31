@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import uuid
 import zipfile
+import hashlib
 from xml.etree import ElementTree
 
 from db import get_db_connection
@@ -60,10 +61,8 @@ def allowed_file(filename):
         and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
     )
 
-
 def normalize_import_header(value):
     return str(value or '').strip().lower().replace('\n', ' ')
-
 
 def column_index(cell_reference):
     letters = ''.join(re.findall(r'[A-Z]+', cell_reference.upper()))
@@ -73,7 +72,6 @@ def column_index(cell_reference):
         index = index * 26 + (ord(char) - ord('A') + 1)
 
     return index - 1
-
 
 def generate_face_label(nama):
     if not nama:
@@ -85,7 +83,6 @@ def generate_face_label(nama):
 
     return label or "user"
 
-
 def get_uploaded_files():
     files = request.files.getlist('files')
 
@@ -95,6 +92,17 @@ def get_uploaded_files():
 
     return [file for file in files if file and file.filename]
 
+def hash_password_md5(password):
+    if not password:
+        return None
+
+    password = str(password)
+
+    # Jika sudah terlihat seperti MD5, jangan hash ulang
+    if re.fullmatch(r'[a-fA-F0-9]{32}', password):
+        return password.lower()
+
+    return hashlib.md5(password.encode('utf-8')).hexdigest()
 
 # ===============================
 # READ EXCEL WITHOUT OPENPYXL FALLBACK
@@ -502,7 +510,13 @@ def create_user():
     cursor = conn.cursor()
 
     try:
-        if role != 'mahasiswa' and email:
+        if role != 'mahasiswa':
+            if not email:
+                return jsonify({"message": "Email wajib diisi"}), 400
+
+            if not password:
+                return jsonify({"message": "Password wajib diisi"}), 400
+
             cursor.execute(
                 "SELECT id FROM users WHERE email = %s",
                 (email,)
@@ -512,6 +526,8 @@ def create_user():
                 return jsonify({
                     "message": f"Email '{email}' sudah terdaftar"
                 }), 400
+
+            password = hash_password_md5(password)
 
         if role == 'mahasiswa':
             email = None
@@ -566,7 +582,6 @@ def create_user():
         "files_uploaded": uploaded_files
     }), 201
 
-
 # ===============================
 # IMPORT USER DARI EXCEL + ZIP FOTO
 # ===============================
@@ -607,6 +622,8 @@ def import_users():
             if role == 'mahasiswa':
                 email = None
                 password = None
+            else:
+                password = hash_password_md5(password)
 
             kode = generate_user_code(role, cursor)
             face_label = generate_face_label(nama)
@@ -672,7 +689,6 @@ def import_users():
         "imported": len(created_users),
         "users": created_users
     }), 201
-
 
 # ===============================
 # UPLOAD FOTO USER
@@ -745,7 +761,6 @@ def uploaded_file(face_label, filename):
 
     return send_from_directory(folder, filename)
 
-
 # ===============================
 # UPDATE USER
 # ===============================
@@ -783,7 +798,6 @@ def update_user(user_id):
         prodi = prodi if prodi is not None else user.get('prodi')
         kelas = kelas if kelas is not None else user.get('kelas')
         email = email if email is not None else user.get('email')
-        password = password if password is not None else user.get('password')
 
         role = str(role or '').strip().lower()
 
@@ -793,6 +807,11 @@ def update_user(user_id):
         if role == 'mahasiswa':
             email = None
             password = None
+        else:
+            if password is not None and str(password).strip() != '':
+                password = hash_password_md5(password)
+            else:
+                password = user.get('password')
 
         cursor.execute(
             """
@@ -840,7 +859,6 @@ def update_user(user_id):
         conn.close()
 
     return jsonify(updated_user), 200
-
 
 # ===============================
 # DELETE USER
@@ -891,3 +909,32 @@ def delete_user(user_id):
         conn.close()
 
     return jsonify({"message": "User berhasil dihapus"}), 200
+
+# ===============================
+# GET DOSEN OPTIONS
+# ===============================
+@user_bp.route('/users/dosen-options', methods=['GET'])
+def get_dosen_options():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute("""
+            SELECT id, kode, nama, nip, email
+            FROM users
+            WHERE role = 'dosen'
+            ORDER BY nama ASC
+        """)
+
+        dosen = cursor.fetchall()
+
+    except Exception as e:
+        return jsonify({
+            "message": f"Gagal mengambil data dosen: {str(e)}"
+        }), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return jsonify(dosen), 200

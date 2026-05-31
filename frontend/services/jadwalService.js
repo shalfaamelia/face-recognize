@@ -1,6 +1,6 @@
 import { getAuthHeaders } from '@/services/authService';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL; 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function getJadwal() {
   const res = await fetch(`${API_URL}/jadwal/`, {
@@ -75,6 +75,21 @@ export async function deleteJadwal(id) {
 
   if (!res.ok) {
     throw new Error(data.message || 'Gagal hapus jadwal');
+  }
+
+  return data;
+}
+
+export async function getDosenOptions() {
+  const res = await fetch(`${API_URL}/users/dosen-options`, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.message || 'Gagal mengambil data dosen');
   }
 
   return data;

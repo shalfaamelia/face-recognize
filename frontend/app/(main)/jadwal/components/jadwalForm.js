@@ -6,11 +6,45 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { classNames } from 'primereact/utils';
 
-const JadwalForm = ({ visible, onHide, onSubmit, form, setForm, editing, errors }) => {
-  const hariOptions = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+const JadwalForm = ({
+  visible,
+  onHide,
+  onSubmit,
+  form,
+  setForm,
+  editing,
+  errors,
+  dosenOptions,
+}) => {
+  const hariOptions = [
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+    'Sabtu',
+    'Minggu',
+  ];
 
   const inputClass = (field) =>
     classNames('w-full mt-2', { 'p-invalid': errors?.[field] });
+
+  const dropdownClass = (field) =>
+    classNames('w-full mt-2', { 'p-invalid': errors?.[field] });
+
+  const handleDosenChange = (e) => {
+    const selectedId = e.value;
+    const selectedDosen = dosenOptions.find(
+      (item) => Number(item.id) === Number(selectedId)
+    );
+
+    setForm({
+      ...form,
+      dosen_user_id: selectedId,
+      dosen: selectedDosen?.nama || '',
+      nip: selectedDosen?.nip || '',
+    });
+  };
 
   return (
     <Dialog
@@ -40,7 +74,7 @@ const JadwalForm = ({ visible, onHide, onSubmit, form, setForm, editing, errors 
         <div>
           <label>Nama Mata Kuliah</label>
           <InputText
-            value={form.nama}
+            value={form.nama || ''}
             onChange={(e) => setForm({ ...form, nama: e.target.value })}
             className={inputClass('nama')}
             placeholder="Masukkan nama mata kuliah"
@@ -50,19 +84,38 @@ const JadwalForm = ({ visible, onHide, onSubmit, form, setForm, editing, errors 
 
         <div>
           <label>Dosen</label>
-          <InputText
-            value={form.dosen}
-            onChange={(e) => setForm({ ...form, dosen: e.target.value })}
-            className={inputClass('dosen')}
-            placeholder="Masukkan nama dosen"
+          <Dropdown
+            value={form.dosen_user_id || null}
+            options={dosenOptions}
+            optionLabel="nama"
+            optionValue="id"
+            onChange={handleDosenChange}
+            placeholder="Pilih dosen"
+            filter
+            showClear
+            className={dropdownClass('dosen_user_id')}
+            emptyMessage="Data dosen tidak tersedia"
           />
-          {errors?.dosen && <small className="p-error">{errors.dosen}</small>}
+          {errors?.dosen_user_id && (
+            <small className="p-error">{errors.dosen_user_id}</small>
+          )}
+        </div>
+
+        <div>
+          <label>NIP Dosen</label>
+          <InputText
+            value={form.nip || ''}
+            className={inputClass('nip')}
+            placeholder="NIP otomatis terisi"
+            disabled
+          />
+          {errors?.nip && <small className="p-error">{errors.nip}</small>}
         </div>
 
         <div>
           <label>Kelas</label>
           <InputText
-            value={form.kelas}
+            value={form.kelas || ''}
             onChange={(e) => setForm({ ...form, kelas: e.target.value })}
             className={inputClass('kelas')}
             placeholder="Masukkan kelas"
@@ -73,11 +126,11 @@ const JadwalForm = ({ visible, onHide, onSubmit, form, setForm, editing, errors 
         <div>
           <label>Hari</label>
           <Dropdown
-            value={form.hari}
+            value={form.hari || null}
             options={hariOptions}
             onChange={(e) => setForm({ ...form, hari: e.value })}
             placeholder="Pilih Hari"
-            className={inputClass('hari')}
+            className={dropdownClass('hari')}
           />
           {errors?.hari && <small className="p-error">{errors.hari}</small>}
         </div>
@@ -85,23 +138,27 @@ const JadwalForm = ({ visible, onHide, onSubmit, form, setForm, editing, errors 
         <div>
           <label>Jam Mulai</label>
           <InputText
-            value={form.jam_mulai}
+            value={form.jam_mulai || ''}
             onChange={(e) => setForm({ ...form, jam_mulai: e.target.value })}
             placeholder="HH:MM"
             className={inputClass('jam_mulai')}
           />
-          {errors?.jam_mulai && <small className="p-error">{errors.jam_mulai}</small>}
+          {errors?.jam_mulai && (
+            <small className="p-error">{errors.jam_mulai}</small>
+          )}
         </div>
 
         <div>
           <label>Jam Selesai</label>
           <InputText
-            value={form.jam_selesai}
+            value={form.jam_selesai || ''}
             onChange={(e) => setForm({ ...form, jam_selesai: e.target.value })}
             placeholder="HH:MM"
             className={inputClass('jam_selesai')}
           />
-          {errors?.jam_selesai && <small className="p-error">{errors.jam_selesai}</small>}
+          {errors?.jam_selesai && (
+            <small className="p-error">{errors.jam_selesai}</small>
+          )}
         </div>
 
         <div className="text-right pt-3">

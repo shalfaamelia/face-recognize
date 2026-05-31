@@ -3,13 +3,7 @@
 import { useState } from 'react';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
-import { Dropdown } from 'primereact/dropdown';
 import { updateProfile } from '@/services/profileService';
-
-const statusOptions = [
-  { label: 'Aktif', value: 'aktif' },
-  { label: 'Nonaktif', value: 'nonaktif' },
-];
 
 const roleLabels = {
   kepala_lab: 'Kepala Lab',
@@ -37,7 +31,10 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
     nama: profile.nama || '',
     nip: profile.nip || '',
     email: profile.email || '',
-    status: profile.status || 'aktif',
+    nim: profile.nim || '',
+    prodi: profile.prodi || '',
+    kelas: profile.kelas || '',
+    password: '',
   });
   const [errors, setErrors] = useState({});
 
@@ -51,9 +48,18 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.nama.trim()) newErrors.nama = 'Nama wajib diisi';
-    if (!formData.email.trim()) newErrors.email = 'Email wajib diisi';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      newErrors.email = 'Format email tidak valid';
+
+    if (profile.role === 'mahasiswa') {
+      if (!formData.nim.trim()) newErrors.nim = 'NIM wajib diisi';
+      if (!formData.prodi.trim()) newErrors.prodi = 'Prodi wajib diisi';
+      if (!formData.kelas.trim()) newErrors.kelas = 'Kelas wajib diisi';
+    } else {
+      if (!formData.nip.trim()) newErrors.nip = 'NIP wajib diisi';
+      if (!formData.email.trim()) newErrors.email = 'Email wajib diisi';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+        newErrors.email = 'Format email tidak valid';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -63,7 +69,20 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
     if (!validateForm()) return;
     setLoading(true);
     try {
-      const updateData = { nama: formData.nama, nip: formData.nip, email: formData.email, status: formData.status };
+      const updateData = {
+        nama: formData.nama,
+        password: formData.password || undefined,
+      };
+
+      if (profile.role === 'mahasiswa') {
+        updateData.nim = formData.nim;
+        updateData.prodi = formData.prodi;
+        updateData.kelas = formData.kelas;
+      } else {
+        updateData.nip = formData.nip;
+        updateData.email = formData.email;
+      }
+
       const updatedProfile = await updateProfile(updateData);
       onUpdate(updatedProfile);
       setIsEditing(false);
@@ -76,7 +95,15 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
   };
 
   const handleCancel = () => {
-    setFormData({ nama: profile.nama || '', nip: profile.nip || '', email: profile.email || '', status: profile.status || 'aktif' });
+    setFormData({
+      nama: profile.nama || '',
+      nip: profile.nip || '',
+      email: profile.email || '',
+      nim: profile.nim || '',
+      prodi: profile.prodi || '',
+      kelas: profile.kelas || '',
+      password: '',
+    });
     setErrors({});
     setIsEditing(false);
   };
@@ -332,33 +359,33 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
                     <span className="info-label">Nama</span>
                     <span className="info-value">{profile.nama}</span>
                   </div>
-                  <div className="info-item">
-                    <span className="info-label">Email</span>
-                    <span className="info-value">{profile.email || '—'}</span>
-                  </div>
-                  {profile.nip && (
-                    <div className="info-item">
-                      <span className="info-label">NIP</span>
-                      <span className="info-value">{profile.nip}</span>
-                    </div>
+                  {profile.role !== 'mahasiswa' && (
+                    <>
+                      <div className="info-item">
+                        <span className="info-label">Email</span>
+                        <span className="info-value">{profile.email || '—'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">NIP</span>
+                        <span className="info-value">{profile.nip || '—'}</span>
+                      </div>
+                    </>
                   )}
-                  {profile.nim && (
-                    <div className="info-item">
-                      <span className="info-label">NIM</span>
-                      <span className="info-value">{profile.nim}</span>
-                    </div>
-                  )}
-                  {profile.prodi && (
-                    <div className="info-item">
-                      <span className="info-label">Prodi</span>
-                      <span className="info-value">{profile.prodi}</span>
-                    </div>
-                  )}
-                  {profile.kelas && (
-                    <div className="info-item">
-                      <span className="info-label">Kelas</span>
-                      <span className="info-value">{profile.kelas}</span>
-                    </div>
+                  {profile.role === 'mahasiswa' && (
+                    <>
+                      <div className="info-item">
+                        <span className="info-label">NIM</span>
+                        <span className="info-value">{profile.nim || '—'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">Prodi</span>
+                        <span className="info-value">{profile.prodi || '—'}</span>
+                      </div>
+                      <div className="info-item">
+                        <span className="info-label">Kelas</span>
+                        <span className="info-value">{profile.kelas || '—'}</span>
+                      </div>
+                    </>
                   )}
                 </div>
 
@@ -416,34 +443,63 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
                     />
                     {errors.nama && <small className="p-error">{errors.nama}</small>}
                   </div>
-                  <div className="edit-field">
-                    <label className="edit-label">NIP</label>
-                    <InputText
-                      value={formData.nip}
-                      onChange={(e) => handleInputChange('nip', e.target.value)}
-                      className="w-full"
-                      placeholder="Masukkan NIP"
-                    />
-                  </div>
-                  <div className="edit-field">
-                    <label className="edit-label">Email <span>*</span></label>
-                    <InputText
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      className={`w-full${errors.email ? ' p-invalid' : ''}`}
-                      placeholder="Masukkan email"
-                    />
-                    {errors.email && <small className="p-error">{errors.email}</small>}
-                  </div>
-                  <div className="edit-field">
-                    <label className="edit-label">Status <span>*</span></label>
-                    <Dropdown
-                      value={formData.status}
-                      options={statusOptions}
-                      onChange={(e) => handleInputChange('status', e.value)}
-                      className="w-full"
-                    />
-                  </div>
+                  {profile.role === 'mahasiswa' ? (
+                    <>
+                      <div className="edit-field">
+                        <label className="edit-label">NIM <span>*</span></label>
+                        <InputText
+                          value={formData.nim}
+                          onChange={(e) => handleInputChange('nim', e.target.value)}
+                          className={`w-full${errors.nim ? ' p-invalid' : ''}`}
+                          placeholder="Masukkan NIM"
+                        />
+                        {errors.nim && <small className="p-error">{errors.nim}</small>}
+                      </div>
+                      <div className="edit-field">
+                        <label className="edit-label">Prodi <span>*</span></label>
+                        <InputText
+                          value={formData.prodi}
+                          onChange={(e) => handleInputChange('prodi', e.target.value)}
+                          className={`w-full${errors.prodi ? ' p-invalid' : ''}`}
+                          placeholder="Masukkan prodi"
+                        />
+                        {errors.prodi && <small className="p-error">{errors.prodi}</small>}
+                      </div>
+                      <div className="edit-field">
+                        <label className="edit-label">Kelas <span>*</span></label>
+                        <InputText
+                          value={formData.kelas}
+                          onChange={(e) => handleInputChange('kelas', e.target.value)}
+                          className={`w-full${errors.kelas ? ' p-invalid' : ''}`}
+                          placeholder="Masukkan kelas"
+                        />
+                        {errors.kelas && <small className="p-error">{errors.kelas}</small>}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="edit-field">
+                        <label className="edit-label">NIP <span>*</span></label>
+                        <InputText
+                          value={formData.nip}
+                          onChange={(e) => handleInputChange('nip', e.target.value)}
+                          className={`w-full${errors.nip ? ' p-invalid' : ''}`}
+                          placeholder="Masukkan NIP"
+                        />
+                        {errors.nip && <small className="p-error">{errors.nip}</small>}
+                      </div>
+                      <div className="edit-field">
+                        <label className="edit-label">Email <span>*</span></label>
+                        <InputText
+                          value={formData.email}
+                          onChange={(e) => handleInputChange('email', e.target.value)}
+                          className={`w-full${errors.email ? ' p-invalid' : ''}`}
+                          placeholder="Masukkan email"
+                        />
+                        {errors.email && <small className="p-error">{errors.email}</small>}
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="action-row">

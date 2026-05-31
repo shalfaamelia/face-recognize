@@ -5,17 +5,24 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { classNames } from 'primereact/utils';
-import { useEffect } from 'react';
 
 const API_URL = 'http://localhost:5000/api';
 
-const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUser }) => {
+const UserForm = ({
+  visible,
+  onHide,
+  onSubmit,
+  form,
+  setForm,
+  errors,
+  editingUser,
+}) => {
   const roles = [
     { label: 'Kepala Lab', value: 'kepala_lab' },
     { label: 'Teknisi', value: 'teknisi' },
     { label: 'Dosen', value: 'dosen' },
     { label: 'Sarana Prasarana', value: 'sarpras' },
-    { label: 'Mahasiswa', value: 'mahasiswa' }
+    { label: 'Mahasiswa', value: 'mahasiswa' },
   ];
 
   const inputClass = (field) =>
@@ -26,16 +33,35 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
 
   const onRoleChange = async (e) => {
     const role = e.value;
-    setForm({ ...form, role });
 
-    if (!editingUser) { // generate kode hanya saat tambah user
+    setForm({
+      ...form,
+      role,
+      nim: '',
+      nip: '',
+      prodi: '',
+      kelas: '',
+      email: '',
+      password: '',
+      files: null,
+    });
+
+    if (!editingUser) {
       try {
         const res = await fetch(`${API_URL}/users/generate_kode?role=${role}`);
         const data = await res.json();
-        setForm((prev) => ({ ...prev, kode: data.kode }));
+
+        setForm((prev) => ({
+          ...prev,
+          kode: data.kode,
+        }));
       } catch (err) {
-        console.error("Gagal generate kode:", err);
-        setForm((prev) => ({ ...prev, kode: '-' }));
+        console.error('Gagal generate kode:', err);
+
+        setForm((prev) => ({
+          ...prev,
+          kode: '-',
+        }));
       }
     }
   };
@@ -55,7 +81,6 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
           onSubmit();
         }}
       >
-        {/* Kode Otomatis */}
         <div>
           <label>Kode</label>
           <InputText
@@ -65,25 +90,28 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
           />
         </div>
 
-        {/* Nama */}
         <div>
           <label>Nama</label>
           <InputText
             className={inputClass('nama')}
             placeholder="Masukkan nama"
-            value={form.nama}
-            onChange={(e) => setForm({ ...form, nama: e.target.value })}
+            value={form.nama || ''}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                nama: e.target.value,
+              })
+            }
           />
           {errors?.nama && <small className="p-error">{errors.nama}</small>}
         </div>
 
-        {/* Role hanya saat tambah */}
         {!editingUser && (
           <div>
             <label>Role</label>
             <Dropdown
               className={dropdownClass('role')}
-              value={form.role}
+              value={form.role || null}
               options={roles}
               onChange={onRoleChange}
               placeholder="Pilih Role"
@@ -92,7 +120,6 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
           </div>
         )}
 
-        {/* Mahasiswa Fields */}
         {form.role === 'mahasiswa' && (
           <>
             <div>
@@ -100,35 +127,55 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
               <InputText
                 className={inputClass('nim')}
                 placeholder="Masukkan NIM"
-                value={form.nim}
-                onChange={(e) => setForm({ ...form, nim: e.target.value })}
+                value={form.nim || ''}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    nim: e.target.value,
+                  })
+                }
               />
               {errors?.nim && <small className="p-error">{errors.nim}</small>}
             </div>
+
             <div>
               <label>Prodi</label>
               <InputText
                 className={inputClass('prodi')}
                 placeholder="Masukkan program studi"
-                value={form.prodi}
-                onChange={(e) => setForm({ ...form, prodi: e.target.value })}
+                value={form.prodi || ''}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    prodi: e.target.value,
+                  })
+                }
               />
-              {errors?.prodi && <small className="p-error">{errors.prodi}</small>}
+              {errors?.prodi && (
+                <small className="p-error">{errors.prodi}</small>
+              )}
             </div>
+
             <div>
               <label>Kelas</label>
               <InputText
                 className={inputClass('kelas')}
                 placeholder="Masukkan kelas"
-                value={form.kelas}
-                onChange={(e) => setForm({ ...form, kelas: e.target.value })}
+                value={form.kelas || ''}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    kelas: e.target.value,
+                  })
+                }
               />
-              {errors?.kelas && <small className="p-error">{errors.kelas}</small>}
+              {errors?.kelas && (
+                <small className="p-error">{errors.kelas}</small>
+              )}
             </div>
           </>
         )}
 
-        {/* Non-Mahasiswa Fields */}
         {form.role !== 'mahasiswa' && (
           <>
             <div>
@@ -136,39 +183,60 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
               <InputText
                 className={inputClass('nip')}
                 placeholder="Masukkan NIP"
-                value={form.nip}
-                onChange={(e) => setForm({ ...form, nip: e.target.value })}
+                value={form.nip || ''}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    nip: e.target.value,
+                  })
+                }
               />
               {errors?.nip && <small className="p-error">{errors.nip}</small>}
             </div>
+
             <div>
               <label>Email</label>
               <InputText
                 className={inputClass('email')}
                 placeholder="Masukkan email"
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                value={form.email || ''}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    email: e.target.value,
+                  })
+                }
               />
-              {errors?.email && <small className="p-error">{errors.email}</small>}
+              {errors?.email && (
+                <small className="p-error">{errors.email}</small>
+              )}
             </div>
-            {/* Password hanya saat tambah */}
-            {!editingUser && (
-              <div>
-                <label>Password</label>
-                <InputText
-                  type="password"
-                  className={inputClass('password')}
-                  placeholder="Masukkan password"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                />
-                {errors?.password && <small className="p-error">{errors.password}</small>}
-              </div>
-            )}
+
+            <div>
+              <label>Password</label>
+              <InputText
+                type="password"
+                className={inputClass('password')}
+                placeholder={
+                  editingUser
+                    ? 'Kosongkan jika tidak ingin mengubah password'
+                    : 'Masukkan password'
+                }
+                value={form.password || ''}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    password: e.target.value,
+                  })
+                }
+              />
+              {errors?.password && (
+                <small className="p-error">{errors.password}</small>
+              )}
+            </div>
           </>
         )}
 
-        {/* Upload Foto hanya saat tambah */}
         {!editingUser && (
           <div className="field">
             <label>Upload Foto (Bisa lebih dari 1)</label>
@@ -178,12 +246,16 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
               className="w-full mt-2"
               accept="image/*"
               multiple
-              onChange={(e) => setForm({ ...form, files: e.target.files })}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  files: e.target.files,
+                })
+              }
             />
           </div>
         )}
 
-        {/* Submit */}
         <div className="text-right pt-3">
           <Button type="submit" label="Simpan" icon="pi pi-save" />
         </div>
