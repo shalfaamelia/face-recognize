@@ -53,7 +53,7 @@ def get_current_user():
 
     try:
         cursor.execute("""
-            SELECT id, kode, nama, role, email, status
+            SELECT id, kode, nama, role, email
             FROM users
             WHERE id = %s
         """, (payload['id'],))
@@ -61,9 +61,6 @@ def get_current_user():
 
         if not user:
             return None, 'User tidak ditemukan'
-
-        if user['status'] != 'aktif':
-            return None, 'User tidak aktif'
 
         if user['role'] == 'mahasiswa':
             return None, 'Mahasiswa tidak dapat login ke web'

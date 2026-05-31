@@ -15,11 +15,6 @@ const UserTable = ({ users, loading, onEdit, onDelete }) => {
     mahasiswa: 'Mahasiswa'
   };
 
-  const statusLabels = {
-    aktif: 'Aktif',
-    nonaktif: 'Nonaktif'
-  };
-
   const renderField = (value) => {
     return value && String(value).trim() !== '' ? value : '-';
   };
@@ -85,7 +80,6 @@ const UserTable = ({ users, loading, onEdit, onDelete }) => {
       <Column field="prodi" header="Prodi" body={(row) => renderField(row.prodi)} />
       <Column field="kelas" header="Kelas" body={(row) => renderField(row.kelas)} />
       <Column field="email" header="Email" body={(row) => renderField(row.email)} />
-      <Column field="status" header="Status" body={(row) => renderField(statusLabels[row.status] || row.status)} />
       <Column header="Foto" body={renderPhotos} />
       <Column
         header="Aksi"

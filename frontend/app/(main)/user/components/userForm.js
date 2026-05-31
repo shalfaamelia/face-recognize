@@ -168,22 +168,6 @@ const UserForm = ({ visible, onHide, onSubmit, form, setForm, errors, editingUse
           </>
         )}
 
-        {/* Status */}
-        <div>
-          <label>Status</label>
-          <Dropdown
-            className={dropdownClass('status')}
-            placeholder="Pilih Status"
-            value={form.status}
-            options={[
-              { label: 'Aktif', value: 'aktif' },
-              { label: 'Nonaktif', value: 'nonaktif' }
-            ]}
-            onChange={(e) => setForm({ ...form, status: e.value })}
-          />
-          {errors?.status && <small className="p-error">{errors.status}</small>}
-        </div>
-
         {/* Upload Foto hanya saat tambah */}
         {!editingUser && (
           <div className="field">

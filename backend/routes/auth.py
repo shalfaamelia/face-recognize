@@ -30,7 +30,7 @@ def login():
 
     try:
         cursor.execute("""
-            SELECT id, kode, nama, role, email, password, status
+            SELECT id, kode, nama, role, email, password
             FROM users
             WHERE email = %s
             LIMIT 1
@@ -42,9 +42,6 @@ def login():
 
         if user['role'] == 'mahasiswa':
             return jsonify({"message": "Mahasiswa tidak dapat login ke web"}), 403
-
-        if user['status'] != 'aktif':
-            return jsonify({"message": "Akun tidak aktif"}), 403
 
         # sementara cocok dengan struktur DB kamu saat ini (plaintext password)
         if user['password'] != password:
@@ -101,7 +98,7 @@ def get_profile():
 
     try:
         cursor.execute("""
-            SELECT id, kode, nama, role, email, nip, status
+            SELECT id, kode, nama, role, email, nip
             FROM users
             WHERE id = %s
         """, (user['id'],))
@@ -117,8 +114,7 @@ def get_profile():
                 "nama": profile['nama'],
                 "role": profile['role'],
                 "email": profile['email'],
-                "nip": profile['nip'],
-                "status": profile['status']
+                "nip": profile['nip']
             }
         }), 200
 
@@ -167,7 +163,7 @@ def update_profile():
         conn.commit()
 
         cursor.execute("""
-            SELECT id, kode, nama, role, email, nip, status
+            SELECT id, kode, nama, role, email, nip
             FROM users
             WHERE id = %s
         """, (user['id'],))
@@ -181,8 +177,7 @@ def update_profile():
                 "nama": updated_profile['nama'],
                 "role": updated_profile['role'],
                 "email": updated_profile['email'],
-                "nip": updated_profile['nip'],
-                "status": updated_profile['status']
+                "nip": updated_profile['nip']
             }
         }), 200
 

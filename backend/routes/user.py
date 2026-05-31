@@ -22,7 +22,7 @@ UPLOAD_FOLDER = os.path.join(BASE_DIR, '..', 'dataset')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 ALLOWED_ROLES = {'kepala_lab', 'teknisi', 'dosen', 'sarpras', 'mahasiswa'}
 
-USER_IMPORT_REQUIRED_FIELDS = ['nama', 'role', 'status']
+USER_IMPORT_REQUIRED_FIELDS = ['nama', 'role']
 
 USER_IMPORT_HEADER_ALIASES = {
     'nama': 'nama',
@@ -41,8 +41,6 @@ USER_IMPORT_HEADER_ALIASES = {
 
     'email': 'email',
     'password': 'password',
-
-    'status': 'status',
 
     'foto': 'foto',
     'photo': 'foto',
@@ -219,16 +217,10 @@ def read_user_excel(file):
             )
 
         role = item['role'].strip().lower()
-        status = item['status'].strip().lower()
 
         if role not in ALLOWED_ROLES:
             raise ValueError(
                 f"Baris {row_number}: role tidak valid ({role})"
-            )
-
-        if status not in ['aktif', 'nonaktif']:
-            raise ValueError(
-                f"Baris {row_number}: status harus aktif atau nonaktif"
             )
 
         if role != 'mahasiswa' and not item.get('email'):
@@ -257,7 +249,6 @@ def read_user_excel(file):
             'kelas': item.get('kelas') or None,
             'email': item.get('email') or None,
             'password': item.get('password') or None,
-            'status': status,
             'foto': foto,
         })
 
@@ -385,7 +376,7 @@ def get_users():
     cursor.execute("""
         SELECT id, kode, nama, face_label, role,
                nim, nip, prodi, kelas,
-               email, status
+               email
         FROM users
         ORDER BY id DESC
     """)
@@ -486,7 +477,6 @@ def create_user():
         kelas = request.form.get('kelas')
         email = request.form.get('email')
         password = request.form.get('password')
-        status = request.form.get('status', 'aktif')
         files = get_uploaded_files()
 
     else:
@@ -499,19 +489,14 @@ def create_user():
         kelas = data.get('kelas')
         email = data.get('email')
         password = data.get('password')
-        status = data.get('status', 'aktif')
 
     role = str(role or '').strip().lower()
-    status = str(status or 'aktif').strip().lower()
 
     if not nama:
         return jsonify({"message": "Nama wajib diisi"}), 400
 
     if role not in ALLOWED_ROLES:
         return jsonify({"message": "Role tidak valid"}), 400
-
-    if status not in ['aktif', 'nonaktif']:
-        return jsonify({"message": "Status harus aktif atau nonaktif"}), 400
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -539,13 +524,13 @@ def create_user():
             """
             INSERT INTO users
             (kode, nama, face_label, role, nim, nip, prodi, kelas,
-             email, password, status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+             email, password)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 kode, nama, face_label, role,
                 nim, nip, prodi, kelas,
-                email, password, status
+                email, password
             )
         )
 
@@ -618,7 +603,6 @@ def import_users():
             kelas = row['kelas']
             email = row['email']
             password = row['password']
-            status = row['status']
 
             if role == 'mahasiswa':
                 email = None
@@ -631,13 +615,13 @@ def import_users():
                 """
                 INSERT INTO users
                 (kode, nama, face_label, role, nim, nip, prodi, kelas,
-                 email, password, status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                 email, password)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     kode, nama, face_label, role,
                     nim, nip, prodi, kelas,
-                    email, password, status
+                    email, password
                 )
             )
 
@@ -777,7 +761,6 @@ def update_user(user_id):
     kelas = data.get('kelas')
     email = data.get('email')
     password = data.get('password')
-    status = data.get('status')
 
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -801,16 +784,11 @@ def update_user(user_id):
         kelas = kelas if kelas is not None else user.get('kelas')
         email = email if email is not None else user.get('email')
         password = password if password is not None else user.get('password')
-        status = status if status is not None else user.get('status')
 
         role = str(role or '').strip().lower()
-        status = str(status or '').strip().lower()
 
         if role not in ALLOWED_ROLES:
             return jsonify({"message": "Role tidak valid"}), 400
-
-        if status not in ['aktif', 'nonaktif']:
-            return jsonify({"message": "Status harus aktif atau nonaktif"}), 400
 
         if role == 'mahasiswa':
             email = None
@@ -826,14 +804,13 @@ def update_user(user_id):
                 prodi = %s,
                 kelas = %s,
                 email = %s,
-                password = %s,
-                status = %s
+                password = %s
             WHERE id = %s
             """,
             (
                 nama, role, nim, nip,
                 prodi, kelas, email, password,
-                status, user_id
+                user_id
             )
         )
 
@@ -843,7 +820,7 @@ def update_user(user_id):
             """
             SELECT id, kode, nama, face_label, role,
                    nim, nip, prodi, kelas,
-                   email, status
+                   email
             FROM users
             WHERE id = %s
             """,

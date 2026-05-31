@@ -132,7 +132,6 @@ export default function Page() {
     let editableForm = {
       id: user.id,
       nama: user.nama,
-      status: user.status,
       role: user.role,
     };
 
@@ -165,8 +164,6 @@ export default function Page() {
       if (!form.email?.trim()) newErrors.email = 'Email harus diisi';
       if (!editingUser && !form.password?.trim()) newErrors.password = 'Password harus diisi';
     }
-    
-    if (!form.status) newErrors.status = 'Status harus dipilih';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
