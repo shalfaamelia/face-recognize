@@ -10,15 +10,6 @@ const roleLabels = {
   teknisi: 'Teknisi',
   dosen: 'Dosen',
   sarpras: 'Sarana Prasarana',
-  mahasiswa: 'Mahasiswa',
-};
-
-const roleColors = {
-  kepala_lab: '#2563eb',
-  teknisi: '#7c3aed',
-  dosen: '#0891b2',
-  sarpras: '#d97706',
-  mahasiswa: '#16a34a',
 };
 
 const getInitials = (name = '') =>
@@ -31,14 +22,9 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
     nama: profile.nama || '',
     nip: profile.nip || '',
     email: profile.email || '',
-    nim: profile.nim || '',
-    prodi: profile.prodi || '',
-    kelas: profile.kelas || '',
     password: '',
   });
   const [errors, setErrors] = useState({});
-
-  const accentColor = roleColors[profile.role] || '#2563eb';
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -49,16 +35,10 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
     const newErrors = {};
     if (!formData.nama.trim()) newErrors.nama = 'Nama wajib diisi';
 
-    if (profile.role === 'mahasiswa') {
-      if (!formData.nim.trim()) newErrors.nim = 'NIM wajib diisi';
-      if (!formData.prodi.trim()) newErrors.prodi = 'Prodi wajib diisi';
-      if (!formData.kelas.trim()) newErrors.kelas = 'Kelas wajib diisi';
-    } else {
-      if (!formData.nip.trim()) newErrors.nip = 'NIP wajib diisi';
-      if (!formData.email.trim()) newErrors.email = 'Email wajib diisi';
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-        newErrors.email = 'Format email tidak valid';
-    }
+    if (!formData.nip.trim()) newErrors.nip = 'NIP wajib diisi';
+    if (!formData.email.trim()) newErrors.email = 'Email wajib diisi';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      newErrors.email = 'Format email tidak valid';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -74,14 +54,8 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
         password: formData.password || undefined,
       };
 
-      if (profile.role === 'mahasiswa') {
-        updateData.nim = formData.nim;
-        updateData.prodi = formData.prodi;
-        updateData.kelas = formData.kelas;
-      } else {
-        updateData.nip = formData.nip;
-        updateData.email = formData.email;
-      }
+      updateData.nip = formData.nip;
+      updateData.email = formData.email;
 
       const updatedProfile = await updateProfile(updateData);
       onUpdate(updatedProfile);
@@ -99,9 +73,6 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
       nama: profile.nama || '',
       nip: profile.nip || '',
       email: profile.email || '',
-      nim: profile.nim || '',
-      prodi: profile.prodi || '',
-      kelas: profile.kelas || '',
       password: '',
     });
     setErrors({});
@@ -109,218 +80,7 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
   };
 
   return (
-    <>
-      <style>{`
-        .profile-card {
-          display: flex;
-          gap: 2rem;
-          align-items: flex-start;
-          flex-wrap: wrap;
-        }
-
-        /* LEFT PANEL */
-        .profile-left {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 1rem;
-          min-width: 200px;
-        }
-
-        .avatar-ring {
-          padding: 4px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 50%, #fff));
-          box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 35%, transparent);
-        }
-
-        .avatar-circle {
-          width: 100px;
-          height: 100px;
-          border-radius: 50%;
-          background: color-mix(in srgb, var(--accent) 12%, #f8fafc);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 2rem;
-          font-weight: 700;
-          color: var(--accent);
-          letter-spacing: -1px;
-          border: 3px solid #fff;
-        }
-
-        .profile-name {
-          font-size: 1.15rem;
-          font-weight: 700;
-          color: #1e293b;
-          text-align: center;
-          margin: 0;
-          line-height: 1.3;
-        }
-
-        .role-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 4px 14px;
-          border-radius: 99px;
-          font-size: 0.78rem;
-          font-weight: 600;
-          color: var(--accent);
-          background: color-mix(in srgb, var(--accent) 10%, #fff);
-          border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
-        }
-
-        .status-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #22c55e;
-          box-shadow: 0 0 0 2px #dcfce7;
-        }
-
-        .status-dot.nonaktif {
-          background: #ef4444;
-          box-shadow: 0 0 0 2px #fee2e2;
-        }
-
-        .kode-chip {
-          font-size: 0.78rem;
-          color: #64748b;
-          background: #f1f5f9;
-          border-radius: 6px;
-          padding: 3px 10px;
-          font-family: 'Courier New', monospace;
-          font-weight: 600;
-          letter-spacing: 0.5px;
-        }
-
-        /* DIVIDER */
-        .profile-divider {
-          width: 1px;
-          background: linear-gradient(to bottom, transparent, #e2e8f0 30%, #e2e8f0 70%, transparent);
-          align-self: stretch;
-          min-height: 180px;
-        }
-
-        /* RIGHT PANEL */
-        .profile-right {
-          flex: 1;
-          min-width: 280px;
-        }
-
-        .section-title {
-          font-size: 0.7rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 1.2px;
-          color: #94a3b8;
-          margin: 0 0 1rem 0;
-        }
-
-        .info-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          gap: 1rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .info-item {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .info-label {
-          font-size: 0.72rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.8px;
-          color: #94a3b8;
-        }
-
-        .info-value {
-          font-size: 0.92rem;
-          font-weight: 500;
-          color: #1e293b;
-          padding: 8px 12px;
-          background: #f8fafc;
-          border-radius: 8px;
-          border: 1px solid #e2e8f0;
-        }
-
-        /* EDIT FORM */
-        .edit-section-title {
-          font-size: 0.7rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 1.2px;
-          color: #94a3b8;
-          margin: 0 0 0.75rem 0;
-        }
-
-        .edit-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-          gap: 1rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .edit-field {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-        }
-
-        .edit-label {
-          font-size: 0.78rem;
-          font-weight: 600;
-          color: #475569;
-        }
-
-        .edit-label span {
-          color: #ef4444;
-        }
-
-        .edit-label .optional {
-          color: #94a3b8;
-          font-weight: 400;
-          font-size: 0.72rem;
-        }
-
-        .readonly-field {
-          font-size: 0.88rem;
-          color: #64748b;
-          background: #f1f5f9;
-          border-radius: 8px;
-          border: 1px solid #e2e8f0;
-          padding: 9px 12px;
-        }
-
-        /* ACTION BUTTONS */
-        .action-row {
-          display: flex;
-          gap: 0.75rem;
-          justify-content: flex-end;
-          padding-top: 1rem;
-          border-top: 1px solid #f1f5f9;
-        }
-
-        /* Accent variable */
-        .profile-wrapper {
-          --accent: ${accentColor};
-        }
-
-        /* Separator line */
-        .edit-separator {
-          grid-column: 1 / -1;
-          height: 1px;
-          background: #f1f5f9;
-          margin: 0.25rem 0;
-        }
-      `}</style>
-
-      <div className="profile-wrapper">
+    <div className={"profile-wrapper profile-role-" + (profile.role || "default")}>
         <div className="profile-card">
 
           {/* LEFT: Avatar + identity */}
@@ -330,20 +90,16 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
                 {getInitials(isEditing ? formData.nama : profile.nama)}
               </div>
             </div>
-            <div style={{ textAlign: 'center' }}>
+            <div className="profile-name-block">
               <p className="profile-name">{isEditing ? formData.nama || '—' : profile.nama}</p>
-              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '6px' }}>
+              <div className="role-badge-row">
                 <span className="role-badge">
-                  <i className="pi pi-id-card" style={{ fontSize: '0.7rem' }} />
+                  <i className="pi pi-id-card profile-role-icon" />
                   {roleLabels[profile.role] || profile.role}
                 </span>
               </div>
             </div>
             <span className="kode-chip">{profile.kode}</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: '#64748b' }}>
-              <span className={`status-dot${profile.status !== 'aktif' ? ' nonaktif' : ''}`} />
-              {profile.status === 'aktif' ? 'Aktif' : 'Nonaktif'}
-            </div>
           </div>
 
           {/* DIVIDER */}
@@ -359,34 +115,14 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
                     <span className="info-label">Nama</span>
                     <span className="info-value">{profile.nama}</span>
                   </div>
-                  {profile.role !== 'mahasiswa' && (
-                    <>
-                      <div className="info-item">
-                        <span className="info-label">Email</span>
-                        <span className="info-value">{profile.email || '—'}</span>
-                      </div>
-                      <div className="info-item">
-                        <span className="info-label">NIP</span>
-                        <span className="info-value">{profile.nip || '—'}</span>
-                      </div>
-                    </>
-                  )}
-                  {profile.role === 'mahasiswa' && (
-                    <>
-                      <div className="info-item">
-                        <span className="info-label">NIM</span>
-                        <span className="info-value">{profile.nim || '—'}</span>
-                      </div>
-                      <div className="info-item">
-                        <span className="info-label">Prodi</span>
-                        <span className="info-value">{profile.prodi || '—'}</span>
-                      </div>
-                      <div className="info-item">
-                        <span className="info-label">Kelas</span>
-                        <span className="info-value">{profile.kelas || '—'}</span>
-                      </div>
-                    </>
-                  )}
+                  <div className="info-item">
+                    <span className="info-label">Email</span>
+                    <span className="info-value">{profile.email || '—'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">NIP</span>
+                    <span className="info-value">{profile.nip || '—'}</span>
+                  </div>
                 </div>
 
                 <div className="action-row">
@@ -402,7 +138,7 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
             ) : (
               <>
                 <p className="edit-section-title">Data Tidak Bisa Diubah</p>
-                <div className="edit-grid" style={{ marginBottom: '1.25rem' }}>
+                <div className="edit-grid edit-grid-readonly">
                   <div className="edit-field">
                     <span className="edit-label">Kode</span>
                     <div className="readonly-field">{profile.kode}</div>
@@ -411,24 +147,7 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
                     <span className="edit-label">Role</span>
                     <div className="readonly-field">{roleLabels[profile.role] || profile.role}</div>
                   </div>
-                  {profile.nim && (
-                    <div className="edit-field">
-                      <span className="edit-label">NIM</span>
-                      <div className="readonly-field">{profile.nim}</div>
-                    </div>
-                  )}
-                  {profile.prodi && (
-                    <div className="edit-field">
-                      <span className="edit-label">Prodi</span>
-                      <div className="readonly-field">{profile.prodi}</div>
-                    </div>
-                  )}
-                  {profile.kelas && (
-                    <div className="edit-field">
-                      <span className="edit-label">Kelas</span>
-                      <div className="readonly-field">{profile.kelas}</div>
-                    </div>
-                  )}
+                  
                 </div>
 
                 <p className="edit-section-title">Data Bisa Diubah</p>
@@ -443,63 +162,27 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
                     />
                     {errors.nama && <small className="p-error">{errors.nama}</small>}
                   </div>
-                  {profile.role === 'mahasiswa' ? (
-                    <>
-                      <div className="edit-field">
-                        <label className="edit-label">NIM <span>*</span></label>
-                        <InputText
-                          value={formData.nim}
-                          onChange={(e) => handleInputChange('nim', e.target.value)}
-                          className={`w-full${errors.nim ? ' p-invalid' : ''}`}
-                          placeholder="Masukkan NIM"
-                        />
-                        {errors.nim && <small className="p-error">{errors.nim}</small>}
-                      </div>
-                      <div className="edit-field">
-                        <label className="edit-label">Prodi <span>*</span></label>
-                        <InputText
-                          value={formData.prodi}
-                          onChange={(e) => handleInputChange('prodi', e.target.value)}
-                          className={`w-full${errors.prodi ? ' p-invalid' : ''}`}
-                          placeholder="Masukkan prodi"
-                        />
-                        {errors.prodi && <small className="p-error">{errors.prodi}</small>}
-                      </div>
-                      <div className="edit-field">
-                        <label className="edit-label">Kelas <span>*</span></label>
-                        <InputText
-                          value={formData.kelas}
-                          onChange={(e) => handleInputChange('kelas', e.target.value)}
-                          className={`w-full${errors.kelas ? ' p-invalid' : ''}`}
-                          placeholder="Masukkan kelas"
-                        />
-                        {errors.kelas && <small className="p-error">{errors.kelas}</small>}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="edit-field">
-                        <label className="edit-label">NIP <span>*</span></label>
-                        <InputText
-                          value={formData.nip}
-                          onChange={(e) => handleInputChange('nip', e.target.value)}
-                          className={`w-full${errors.nip ? ' p-invalid' : ''}`}
-                          placeholder="Masukkan NIP"
-                        />
-                        {errors.nip && <small className="p-error">{errors.nip}</small>}
-                      </div>
-                      <div className="edit-field">
-                        <label className="edit-label">Email <span>*</span></label>
-                        <InputText
-                          value={formData.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                          className={`w-full${errors.email ? ' p-invalid' : ''}`}
-                          placeholder="Masukkan email"
-                        />
-                        {errors.email && <small className="p-error">{errors.email}</small>}
-                      </div>
-                    </>
-                  )}
+
+                  <div className="edit-field">
+                    <label className="edit-label">NIP <span>*</span></label>
+                    <InputText
+                      value={formData.nip}
+                      onChange={(e) => handleInputChange('nip', e.target.value)}
+                      className={`w-full${errors.nip ? ' p-invalid' : ''}`}
+                      placeholder="Masukkan NIP"
+                    />
+                    {errors.nip && <small className="p-error">{errors.nip}</small>}
+                  </div>
+                  <div className="edit-field">
+                    <label className="edit-label">Email <span>*</span></label>
+                    <InputText
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      className={`w-full${errors.email ? ' p-invalid' : ''}`}
+                      placeholder="Masukkan email"
+                    />
+                    {errors.email && <small className="p-error">{errors.email}</small>}
+                  </div>
                 </div>
 
                 <div className="action-row">
@@ -525,7 +208,6 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
           </div>
         </div>
       </div>
-    </>
   );
 };
 

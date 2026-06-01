@@ -137,28 +137,58 @@ const JadwalForm = ({
 
         <div>
           <label>Jam Mulai</label>
-          <InputText
-            value={form.jam_mulai || ''}
-            onChange={(e) => setForm({ ...form, jam_mulai: e.target.value })}
-            placeholder="HH:MM"
-            className={inputClass('jam_mulai')}
-          />
-          {errors?.jam_mulai && (
-            <small className="p-error">{errors.jam_mulai}</small>
-          )}
+          <div style={{ display: 'grid', gridTemplateColumns: '4.5rem 4.5rem', gap: '0.75rem', marginTop: '0.5rem' }}>
+            <InputText
+              value={form.jam_mulai_jam || ''}
+              onChange={(e) => setForm({ ...form, jam_mulai_jam: e.target.value })}
+              placeholder="HH"
+              className={inputClass('jam_mulai_jam')}
+              style={{ width: '100%' }}
+            />
+            <InputText
+              value={form.jam_mulai_menit || ''}
+              onChange={(e) => setForm({ ...form, jam_mulai_menit: e.target.value })}
+              placeholder="MM"
+              className={inputClass('jam_mulai_menit')}
+              style={{ width: '100%' }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+            {errors?.jam_mulai_jam && (
+              <small className="p-error">{errors.jam_mulai_jam}</small>
+            )}
+            {errors?.jam_mulai_menit && (
+              <small className="p-error">{errors.jam_mulai_menit}</small>
+            )}
+          </div>
         </div>
 
         <div>
           <label>Jam Selesai</label>
-          <InputText
-            value={form.jam_selesai || ''}
-            onChange={(e) => setForm({ ...form, jam_selesai: e.target.value })}
-            placeholder="HH:MM"
-            className={inputClass('jam_selesai')}
-          />
-          {errors?.jam_selesai && (
-            <small className="p-error">{errors.jam_selesai}</small>
-          )}
+          <div style={{ display: 'grid', gridTemplateColumns: '4.5rem 4.5rem', gap: '0.75rem', marginTop: '0.5rem' }}>
+            <InputText
+              value={form.jam_selesai_jam || ''}
+              onChange={(e) => setForm({ ...form, jam_selesai_jam: e.target.value })}
+              placeholder="HH"
+              className={inputClass('jam_selesai_jam')}
+              style={{ width: '100%' }}
+            />
+            <InputText
+              value={form.jam_selesai_menit || ''}
+              onChange={(e) => setForm({ ...form, jam_selesai_menit: e.target.value })}
+              placeholder="MM"
+              className={inputClass('jam_selesai_menit')}
+              style={{ width: '100%' }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+            {errors?.jam_selesai_jam && (
+              <small className="p-error">{errors.jam_selesai_jam}</small>
+            )}
+            {errors?.jam_selesai_menit && (
+              <small className="p-error">{errors.jam_selesai_menit}</small>
+            )}
+          </div>
         </div>
 
         <div className="text-right pt-3">

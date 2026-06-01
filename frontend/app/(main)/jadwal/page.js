@@ -89,6 +89,11 @@ export default function Page() {
     setJadwal(filtered);
   };
 
+  const padTimePart = (value) => String(value || '').padStart(2, '0');
+
+  const normalizeTimeString = (value) =>
+    String(value || '').replace(/:+$/, '').trim();
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -112,12 +117,28 @@ export default function Page() {
       newErrors.hari = 'Hari harus dipilih';
     }
 
-    if (!form.jam_mulai?.trim()) {
-      newErrors.jam_mulai = 'Jam mulai harus diisi';
+    if (!form.jam_mulai_jam?.trim()) {
+      newErrors.jam_mulai_jam = 'Jam mulai (jam) harus diisi';
+    } else if (!/^[0-2]?\d$/.test(form.jam_mulai_jam) || Number(form.jam_mulai_jam) > 23) {
+      newErrors.jam_mulai_jam = 'Jam tidak valid';
     }
 
-    if (!form.jam_selesai?.trim()) {
-      newErrors.jam_selesai = 'Jam selesai harus diisi';
+    if (!form.jam_mulai_menit?.trim()) {
+      newErrors.jam_mulai_menit = 'Jam mulai (menit) harus diisi';
+    } else if (!/^[0-5]?\d$/.test(form.jam_mulai_menit)) {
+      newErrors.jam_mulai_menit = 'Menit tidak valid';
+    }
+
+    if (!form.jam_selesai_jam?.trim()) {
+      newErrors.jam_selesai_jam = 'Jam selesai (jam) harus diisi';
+    } else if (!/^[0-2]?\d$/.test(form.jam_selesai_jam) || Number(form.jam_selesai_jam) > 23) {
+      newErrors.jam_selesai_jam = 'Jam tidak valid';
+    }
+
+    if (!form.jam_selesai_menit?.trim()) {
+      newErrors.jam_selesai_menit = 'Jam selesai (menit) harus diisi';
+    } else if (!/^[0-5]?\d$/.test(form.jam_selesai_menit)) {
+      newErrors.jam_selesai_menit = 'Menit tidak valid';
     }
 
     setErrors(newErrors);
@@ -134,11 +155,26 @@ export default function Page() {
       return;
     }
 
+    const payload = {
+      ...form,
+      jam_mulai: `${padTimePart(form.jam_mulai_jam)}:${padTimePart(
+        form.jam_mulai_menit
+      )}`,
+      jam_selesai: `${padTimePart(form.jam_selesai_jam)}:${padTimePart(
+        form.jam_selesai_menit
+      )}`,
+    };
+
+    delete payload.jam_mulai_jam;
+    delete payload.jam_mulai_menit;
+    delete payload.jam_selesai_jam;
+    delete payload.jam_selesai_menit;
+
     try {
       if (editing) {
-        await updateJadwal(form.id, form);
+        await updateJadwal(form.id, payload);
       } else {
-        await createJadwal(form);
+        await createJadwal(payload);
       }
 
       toastRef.current?.showToast("00", "Data berhasil disimpan");
@@ -183,6 +219,9 @@ export default function Page() {
   };
 
   const handleEdit = (row) => {
+    const [jamMulaiJam = '', jamMulaiMenit = ''] = normalizeTimeString(row.jam_mulai || '').split(':');
+    const [jamSelesaiJam = '', jamSelesaiMenit = ''] = normalizeTimeString(row.jam_selesai || '').split(':');
+
     setForm({
       id: row.id,
       kode: row.kode || '',
@@ -192,8 +231,10 @@ export default function Page() {
       nip: row.nip || '',
       kelas: row.kelas || '',
       hari: row.hari || '',
-      jam_mulai: row.jam_mulai || '',
-      jam_selesai: row.jam_selesai || '',
+      jam_mulai_jam: jamMulaiJam,
+      jam_mulai_menit: jamMulaiMenit,
+      jam_selesai_jam: jamSelesaiJam,
+      jam_selesai_menit: jamSelesaiMenit,
     });
 
     setEditing(true);
@@ -290,7 +331,19 @@ export default function Page() {
             placeholder="Cari nama, kode, dosen, NIP, atau kelas..."
             onSearch={handleSearch}
             onAddClick={() => {
-              setForm({});
+              setForm({
+                kode: '',
+                nama: '',
+                dosen_user_id: null,
+                dosen: '',
+                nip: '',
+                kelas: '',
+                hari: '',
+                jam_mulai_jam: '',
+                jam_mulai_menit: '',
+                jam_selesai_jam: '',
+                jam_selesai_menit: '',
+              });
               setEditing(false);
               setErrors({});
               setDialogVisible(true);

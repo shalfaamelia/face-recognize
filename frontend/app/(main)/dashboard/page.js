@@ -204,7 +204,7 @@ export default function DashboardPage() {
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div>
+    <Card>
       {/* Page Header */}
       <div className="page-header">
         <div>
@@ -477,6 +477,6 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

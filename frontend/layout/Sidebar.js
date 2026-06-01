@@ -9,18 +9,18 @@ import { useAuth } from '@/app/components/authProvider';
 const navItems = [
   {
     items: [
-      { href: '/dashboard', icon: 'pi-home', label: 'Dashboard', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
+      { href: '/dashboard', icon: 'pi-home', label: 'Dashboard', roles: ['kepala_lab', 'teknisi', 'sarpras', 'dosen'] },
       { href: '/user', icon: 'pi-users', label: 'Pengguna', roles: ['kepala_lab'] },
       { href: '/jadwal', icon: 'pi-calendar', label: 'Jadwal Praktikum', roles: ['kepala_lab', 'teknisi'] },
-      { href: '/monitoring', icon: 'pi-eye', label: 'Monitoring', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
+      { href: '/monitoring', icon: 'pi-eye', label: 'Monitoring', roles: ['kepala_lab', 'teknisi', 'sarpras', 'dosen'] },
       { href: '/peminjaman_lab', icon: 'pi-calendar-plus', label: 'Peminjaman Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
       {
         href: '/laporan',
         icon: 'pi-file',
         label: 'Laporan',
-        roles: ['kepala_lab', 'teknisi', 'sarpras'],
+        roles: ['kepala_lab', 'teknisi', 'sarpras', 'dosen'],
         children: [
-          { href: '/laporan/akses', icon: 'pi-key', label: 'Laporan Akses Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
+          { href: '/laporan/akses', icon: 'pi-key', label: 'Laporan Akses Lab', roles: ['kepala_lab', 'teknisi', 'sarpras', 'dosen'] },
           { href: '/laporan/peminjaman', icon: 'pi-book', label: 'Laporan Peminjaman Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
           { href: '/laporan/barang', icon: 'pi-box', label: 'Laporan Barang Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
         ],

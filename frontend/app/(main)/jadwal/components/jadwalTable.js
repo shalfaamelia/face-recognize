@@ -5,8 +5,12 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 
 const JadwalTable = ({ jadwal, loading, onEdit, onDelete }) => {
+  const normalizeTime = (value) =>
+    String(value || '').replace(/:+$/, '').trim();
+
   const renderField = (value) => {
-    return value && String(value).trim() !== '' ? value : '-';
+    const normalized = normalizeTime(value);
+    return normalized !== '' ? normalized : '-';
   };
 
   return (
