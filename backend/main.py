@@ -70,8 +70,8 @@ def is_within_schedule(user):
         print(f"Access granted for role: {user['role']}")
         return True
 
-    if not user["kelas"]:
-        print("User has no class assigned")
+    if not user["prodi"] or not user["kelas"]:
+        print("User has no study program or class assigned")
         return False
 
     now = datetime.now()
@@ -93,10 +93,19 @@ def is_within_schedule(user):
         # Check if user's class has a scheduled session right now
         query = """
             SELECT * FROM jadwal_praktikum 
-            WHERE kelas = %s AND hari = %s 
+            WHERE prodi = %s AND kelas = %s AND hari = %s 
             AND jam_mulai <= %s AND jam_selesai >= %s
         """
-        cursor.execute(query, (user["kelas"], current_day, current_time, current_time))
+        cursor.execute(
+            query,
+            (
+                user["prodi"],
+                user["kelas"],
+                current_day,
+                current_time,
+                current_time,
+            )
+        )
         schedule = cursor.fetchone()
 
         if schedule:
@@ -106,7 +115,7 @@ def is_within_schedule(user):
             return True
         else:
             print(
-                f"No active schedule for {user['nama']} ({user['kelas']}) on {current_day} at {current_time}"
+                f"No active schedule for {user['nama']} ({user['prodi']} {user['kelas']}) on {current_day} at {current_time}"
             )
             return False
     except Exception as e:

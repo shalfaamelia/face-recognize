@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Dropdown } from 'primereact/dropdown';
 import ToastNotifier from '@/app/components/toastNotifier';
@@ -82,6 +83,7 @@ export default function Page() {
         item.nama?.toLowerCase().includes(lowerKeyword) ||
         item.dosen?.toLowerCase().includes(lowerKeyword) ||
         item.nip?.toLowerCase().includes(lowerKeyword) ||
+        item.prodi?.toLowerCase().includes(lowerKeyword) ||
         item.kelas?.toLowerCase().includes(lowerKeyword)
       );
     }
@@ -105,8 +107,8 @@ export default function Page() {
       newErrors.dosen_user_id = 'Dosen harus dipilih';
     }
 
-    if (!form.nip?.trim()) {
-      newErrors.nip = 'NIP dosen tidak boleh kosong';
+    if (!form.prodi?.trim()) {
+      newErrors.prodi = 'Prodi harus diisi';
     }
 
     if (!form.kelas?.trim()) {
@@ -218,6 +220,15 @@ export default function Page() {
     }
   };
 
+  const handleDownloadTemplate = () => {
+    const link = document.createElement('a');
+    link.href = '/templates/format_import_jadwal_praktikum.xlsx?v=prodi-20260604';
+    link.download = 'format_import_jadwal_praktikum.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleEdit = (row) => {
     const [jamMulaiJam = '', jamMulaiMenit = ''] = normalizeTimeString(row.jam_mulai || '').split(':');
     const [jamSelesaiJam = '', jamSelesaiMenit = ''] = normalizeTimeString(row.jam_selesai || '').split(':');
@@ -229,6 +240,7 @@ export default function Page() {
       dosen_user_id: row.dosen_user_id || null,
       dosen: row.dosen || '',
       nip: row.nip || '',
+      prodi: row.prodi || '',
       kelas: row.kelas || '',
       hari: row.hari || '',
       jam_mulai_jam: jamMulaiJam,
@@ -328,7 +340,7 @@ export default function Page() {
 
           <HeaderBar
             title=""
-            placeholder="Cari nama, kode, dosen, NIP, atau kelas..."
+            placeholder="Cari nama, kode, dosen, NIP, prodi, atau kelas..."
             onSearch={handleSearch}
             onAddClick={() => {
               setForm({
@@ -337,6 +349,7 @@ export default function Page() {
                 dosen_user_id: null,
                 dosen: '',
                 nip: '',
+                prodi: '',
                 kelas: '',
                 hari: '',
                 jam_mulai_jam: '',
@@ -349,6 +362,16 @@ export default function Page() {
               setDialogVisible(true);
             }}
             onImportClick={() => fileInputRef.current?.click()}
+            extraActions={(
+              <Button
+                label="Download Format"
+                icon="pi pi-download"
+                severity="secondary"
+                outlined
+                size="small"
+                onClick={handleDownloadTemplate}
+              />
+            )}
           />
         </div>
       </div>

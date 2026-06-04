@@ -113,6 +113,17 @@ const JadwalForm = ({
         </div>
 
         <div>
+          <label>Prodi</label>
+          <InputText
+            value={form.prodi || ''}
+            onChange={(e) => setForm({ ...form, prodi: e.target.value })}
+            className={inputClass('prodi')}
+            placeholder="Masukkan prodi"
+          />
+          {errors?.prodi && <small className="p-error">{errors.prodi}</small>}
+        </div>
+
+        <div>
           <label>Kelas</label>
           <InputText
             value={form.kelas || ''}

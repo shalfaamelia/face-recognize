@@ -30,6 +30,7 @@ const JadwalTable = ({ jadwal, loading, onEdit, onDelete }) => {
       <Column field="nama" header="Mata Kuliah" body={(row) => renderField(row.nama)} />
       <Column field="dosen" header="Dosen" body={(row) => renderField(row.dosen)} />
       <Column field="nip" header="NIP" body={(row) => renderField(row.nip)} />
+      <Column field="prodi" header="Prodi" body={(row) => renderField(row.prodi)} />
       <Column field="kelas" header="Kelas" body={(row) => renderField(row.kelas)} />
       <Column field="hari" header="Hari" body={(row) => renderField(row.hari)} />
       <Column field="jam_mulai" header="Jam Mulai" body={(row) => renderField(row.jam_mulai)} />

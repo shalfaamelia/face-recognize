@@ -3,7 +3,15 @@
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
 
-const HeaderBar = ({ title, placeholder, onSearch, onAddClick, onImportClick, noMargin }) => {
+const HeaderBar = ({
+  title,
+  placeholder,
+  onSearch,
+  onAddClick,
+  onImportClick,
+  extraActions,
+  noMargin,
+}) => {
   return (
     <div className={`flex justify-content-between align-items-center gap-3 flex-wrap${noMargin ? '' : ' mt-4 mb-2'}`}>
       <h4 className="m-0">{title}</h4>
@@ -30,6 +38,8 @@ const HeaderBar = ({ title, placeholder, onSearch, onAddClick, onImportClick, no
             onClick={onImportClick}
           />
         )}
+
+        {extraActions}
       </div>
     </div>
   );
