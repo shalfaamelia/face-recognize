@@ -3,17 +3,27 @@ import { getAuthHeaders } from "./authService";
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // ===============================
-// BUILD DATE QUERY (FILTER)
+// BUILD DATE QUERY FILTER
+// ===============================
 const buildDateQuery = (filters = {}) => {
   const params = new URLSearchParams();
-  if (filters.startDate) params.append('startDate', filters.startDate);
-  if (filters.endDate) params.append('endDate', filters.endDate);
+
+  if (filters.startDate) {
+    params.append('startDate', filters.startDate);
+  }
+
+  if (filters.endDate) {
+    params.append('endDate', filters.endDate);
+  }
+
   const query = params.toString();
+
   return query ? `?${query}` : '';
 };
 
 // ===============================
 // GET SEMUA LAPORAN BARANG
+// ===============================
 export async function getLaporanBarang(filters = {}) {
   const res = await fetch(`${API_URL}/laporan/barang${buildDateQuery(filters)}`, {
     method: 'GET',
@@ -21,12 +31,17 @@ export async function getLaporanBarang(filters = {}) {
   });
 
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || 'Gagal mengambil laporan barang');
+
+  if (!res.ok) {
+    throw new Error(data.message || 'Gagal mengambil laporan barang');
+  }
+
   return data;
 }
 
 // ===============================
 // GET DETAIL LAPORAN BARANG
+// ===============================
 export async function getDetailLaporanBarang(id) {
   const res = await fetch(`${API_URL}/laporan/barang/${id}`, {
     method: 'GET',
@@ -34,18 +49,25 @@ export async function getDetailLaporanBarang(id) {
   });
 
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || 'Gagal mengambil detail laporan barang');
+
+  if (!res.ok) {
+    throw new Error(data.message || 'Gagal mengambil detail laporan barang');
+  }
+
   return data;
 }
 
 // ===============================
-// IMAGE PROXY
+// GET FOTO LAPORAN BARANG
+// ===============================
 export async function getLaporanBarangImage(filename) {
-  if (!filename) throw new Error('filename wajib diisi');
+  if (!filename) {
+    throw new Error('filename wajib diisi');
+  }
 
   const urlsToTry = [
-    `${BACKEND_API_URL}/uploads/laporan_barang/${encodeURIComponent(filename)}`,
-    `${BACKEND_API_URL}/laporan-barang/uploads/${encodeURIComponent(filename)}`
+    `${API_URL}/uploads/laporan_barang/${encodeURIComponent(filename)}`,
+    `${API_URL}/laporan-barang/uploads/${encodeURIComponent(filename)}`,
   ];
 
   const errors = [];
@@ -54,8 +76,9 @@ export async function getLaporanBarangImage(filename) {
     try {
       const res = await fetch(url, {
         headers: {
+          ...getAuthHeaders(),
           'ngrok-skip-browser-warning': 'true',
-          'Accept': 'image/*,*/*',
+          Accept: 'image/*,*/*',
         },
         cache: 'no-store',
       });
@@ -63,13 +86,15 @@ export async function getLaporanBarangImage(filename) {
       if (res.ok) {
         const blob = await res.blob();
         return URL.createObjectURL(blob);
-      } else {
-        errors.push({ url, status: res.status });
       }
+
+      errors.push({ url, status: res.status });
     } catch (err) {
       errors.push({ url, error: err.message });
     }
   }
 
-  throw new Error(`Gagal mengambil foto. Dicoba dari: ${errors.map(e => e.url).join(', ')}`);
+  throw new Error(
+    `Gagal mengambil foto. Dicoba dari: ${errors.map((e) => e.url).join(', ')}`
+  );
 }

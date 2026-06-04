@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Tag } from 'primereact/tag';
+import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
-import { getLaporanBarangImage } from '@/services/laporanBarangService';
+import { getAjuanBarangImage } from '@/services/ajuanBarangService';
 
-const LaporanBarangTable = ({ laporanBarang, loading }) => {
+const AjuanBarangTable = ({ ajuanBarang, loading, onTerima }) => {
   const [imageDialogVisible, setImageDialogVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageError, setImageError] = useState(false);
@@ -40,7 +41,7 @@ const LaporanBarangTable = ({ laporanBarang, loading }) => {
   };
 
   const statusBodyTemplate = (row) => {
-    const value = row.status || 'diterima';
+    const value = row.status || 'menunggu';
     const normalizedValue = String(value).toLowerCase();
 
     let severity = 'info';
@@ -62,7 +63,7 @@ const LaporanBarangTable = ({ laporanBarang, loading }) => {
         type="button"
         onClick={async () => {
           try {
-            const url = await getLaporanBarangImage(row.foto);
+            const url = await getAjuanBarangImage(row.foto);
             setSelectedImage(url);
             setImageError(false);
             setImageDialogVisible(true);
@@ -88,19 +89,35 @@ const LaporanBarangTable = ({ laporanBarang, loading }) => {
     );
   };
 
+  const actionBodyTemplate = (row) => {
+    if (row.status !== 'menunggu') {
+      return <span className="text-gray-500">-</span>;
+    }
+
+    return (
+      <Button
+        label="Terima"
+        icon="pi pi-check"
+        severity="success"
+        size="small"
+        onClick={() => onTerima(row)}
+      />
+    );
+  };
+
   return (
     <>
       <DataTable
-        value={laporanBarang}
+        value={ajuanBarang}
         paginator
         rows={10}
         rowsPerPageOptions={[10, 25, 50, 100]}
         loading={loading}
         size="small"
-        dataKey="id"
         stripedRows
         responsiveLayout="scroll"
-        emptyMessage="Tidak ada laporan barang lab"
+        emptyMessage="Tidak ada ajuan barang lab"
+        dataKey="id"
       >
         <Column field="nama" header="Nama" body={(row) => renderField(row.nama)} />
         <Column field="nim" header="NIM" body={(row) => renderField(row.nim)} />
@@ -113,6 +130,7 @@ const LaporanBarangTable = ({ laporanBarang, loading }) => {
         <Column field="deskripsi" header="Deskripsi" body={(row) => renderField(row.deskripsi)} />
         <Column field="status" header="Status" body={statusBodyTemplate} />
         <Column header="Foto" body={fotoBodyTemplate} />
+        <Column header="Aksi" body={actionBodyTemplate} />
       </DataTable>
 
       <Dialog
@@ -122,7 +140,7 @@ const LaporanBarangTable = ({ laporanBarang, loading }) => {
           setSelectedImage(null);
           setImageError(false);
         }}
-        header="Foto Laporan Barang"
+        header="Foto Ajuan Barang"
         style={{ width: '50vw' }}
         modal
       >
@@ -137,7 +155,7 @@ const LaporanBarangTable = ({ laporanBarang, loading }) => {
           >
             <img
               src={selectedImage}
-              alt="Foto laporan barang"
+              alt="Foto ajuan barang"
               style={{
                 maxWidth: '100%',
                 maxHeight: '80vh',
@@ -170,4 +188,4 @@ const LaporanBarangTable = ({ laporanBarang, loading }) => {
   );
 };
 
-export default LaporanBarangTable;
+export default AjuanBarangTable;
