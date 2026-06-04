@@ -146,6 +146,15 @@ export default function Page() {
     }
   };
 
+  const handleDownloadTemplate = () => {
+    const link = document.createElement('a');
+    link.href = '/templates/format_import_user.xlsx?v=prodi-20260604';
+    link.download = 'format_import_user.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleEdit = (user) => {
     // Hanya kolom yang bisa diedit yang di-set ke form
     let editableForm = {
@@ -176,7 +185,7 @@ export default function Page() {
 
     if (!form.nama?.trim()) newErrors.nama = 'Nama harus diisi';
     if (!form.role) newErrors.role = 'Role harus dipilih';
-    
+
     if (form.role === 'mahasiswa') {
       if (!nimValue) {
         newErrors.nim = 'NIM harus diisi';
@@ -333,11 +342,26 @@ export default function Page() {
             />
           </div>
 
-          <div className="text-right pt-3">
+          <div className="p-3 rounded border border-300 bg-gray-50 text-sm">
+            <p className="font-semibold mb-2">Petunjuk Singkat</p>
+            <p className="m-0">Silahkan download format terlebih dahulu. Untuk petunjuk pengisian data akan ada di dalam file.</p>
+          </div>
+
+          <div className="flex justify-content-between gap-3 flex-wrap align-items-center pt-3">
+            <Button
+              type="button"
+              label="Download Format"
+              icon="pi pi-download"
+              severity="warning"
+              size="small"
+              onClick={handleDownloadTemplate}
+            />
             <Button
               type="button"
               label="Import"
               icon="pi pi-upload"
+              severity="severity"
+              size="small"
               loading={loading}
               onClick={handleImportUsers}
             />

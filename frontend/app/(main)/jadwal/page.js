@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
 import ToastNotifier from '@/app/components/toastNotifier';
 import HeaderBar from "@/app/components/headerbar";
@@ -25,14 +26,15 @@ export default function Page() {
 
   const [loading, setLoading] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [importDialogVisible, setImportDialogVisible] = useState(false);
   const [form, setForm] = useState({});
+  const [importFile, setImportFile] = useState(null);
   const [editing, setEditing] = useState(false);
   const [errors, setErrors] = useState({});
   const [selectedDay, setSelectedDay] = useState(null);
   const [searchKeyword, setSearchKeyword] = useState('');
 
   const toastRef = useRef(null);
-  const fileInputRef = useRef(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -194,9 +196,12 @@ export default function Page() {
   };
 
   const handleImportExcel = async (event) => {
-    const file = event.target.files?.[0];
+    const file = event?.target?.files?.[0] || importFile;
 
-    if (!file) return;
+    if (!file) {
+      toastRef.current?.showToast("01", "File Excel wajib dipilih");
+      return;
+    }
 
     const payload = new FormData();
     payload.append('file', file);
@@ -211,11 +216,15 @@ export default function Page() {
       );
 
       await fetchData();
+      setImportDialogVisible(false);
+      setImportFile(null);
     } catch (err) {
       console.error(err);
       toastRef.current?.showToast("01", err.message || "Gagal import jadwal");
     } finally {
-      event.target.value = '';
+      if (event?.target) {
+        event.target.value = '';
+      }
       setLoading(false);
     }
   };
@@ -330,14 +339,6 @@ export default function Page() {
             />
           </div>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx"
-            className="hidden"
-            onChange={handleImportExcel}
-          />
-
           <HeaderBar
             title=""
             placeholder="Cari nama, kode, dosen, NIP, prodi, atau kelas..."
@@ -361,20 +362,58 @@ export default function Page() {
               setErrors({});
               setDialogVisible(true);
             }}
-            onImportClick={() => fileInputRef.current?.click()}
-            extraActions={(
-              <Button
-                label="Download Format"
-                icon="pi pi-download"
-                severity="secondary"
-                outlined
-                size="small"
-                onClick={handleDownloadTemplate}
-              />
-            )}
+            onImportClick={() => setImportDialogVisible(true)}
           />
         </div>
       </div>
+
+      <Dialog
+        header="Import Jadwal"
+        visible={importDialogVisible}
+        onHide={() => {
+          setImportDialogVisible(false);
+          setImportFile(null);
+        }}
+        style={{ width: '40vw' }}
+        modal
+      >
+        <div className="space-y-3">
+          <div>
+            <label>File Excel (.xlsx)</label>
+            <input
+              type="file"
+              accept=".xlsx"
+              className="w-full mt-2"
+              onChange={(e) => setImportFile(e.target.files?.[0])}
+            />
+          </div>
+
+          <div className="p-3 rounded border border-300 bg-gray-50 text-sm">
+            <p className="font-semibold mb-2">Petunjuk Singkat</p>
+            <p className="m-0">Silahkan download format terlebih dahulu. Untuk petunjuk pengisian data akan ada di dalam file.</p>
+          </div>
+
+          <div className="flex justify-content-between gap-3 flex-wrap align-items-center pt-3">
+            <Button
+              type="button"
+              label="Download Format"
+              icon="pi pi-download"
+              severity="warning"
+              size="small"
+              onClick={handleDownloadTemplate}
+            />
+            <Button
+              type="button"
+              label="Import"
+              icon="pi pi-upload"
+              severity="severity"
+              size="small"
+              loading={loading}
+              onClick={handleImportExcel}
+            />
+          </div>
+        </div>
+      </Dialog>
 
       <JadwalTable
         jadwal={jadwal}
