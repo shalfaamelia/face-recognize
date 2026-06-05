@@ -159,6 +159,7 @@ export default function Page() {
     // Hanya kolom yang bisa diedit yang di-set ke form
     let editableForm = {
       id: user.id,
+      kode: user.kode,
       nama: user.nama,
       role: user.role,
     };

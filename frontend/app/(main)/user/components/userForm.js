@@ -85,7 +85,7 @@ const UserForm = ({
           <label>Kode</label>
           <InputText
             className={inputClass('kode')}
-            value={form.kode || 'Otomatis'}
+            value={editingUser ? form.kode || '' : form.kode || 'Otomatis'}
             disabled
           />
         </div>
@@ -94,7 +94,7 @@ const UserForm = ({
           <label>Nama</label>
           <InputText
             className={inputClass('nama')}
-            placeholder="Masukkan nama"
+            placeholder="Masukkan Nama"
             value={form.nama || ''}
             onChange={(e) =>
               setForm({
@@ -140,10 +140,10 @@ const UserForm = ({
             </div>
 
             <div>
-              <label>Prodi</label>
+              <label>Program Studi</label>
               <InputText
                 className={inputClass('prodi')}
-                placeholder="Masukkan program studi"
+                placeholder="Masukkan Program Studi"
                 value={form.prodi || ''}
                 onChange={(e) =>
                   setForm({
@@ -161,7 +161,7 @@ const UserForm = ({
               <label>Kelas</label>
               <InputText
                 className={inputClass('kelas')}
-                placeholder="Masukkan kelas"
+                placeholder="Masukkan Kelas"
                 value={form.kelas || ''}
                 onChange={(e) =>
                   setForm({
@@ -201,7 +201,7 @@ const UserForm = ({
               <label>Email</label>
               <InputText
                 className={inputClass('email')}
-                placeholder="Masukkan email"
+                placeholder="Masukkan Email"
                 value={form.email || ''}
                 onChange={(e) =>
                   setForm({
@@ -222,8 +222,8 @@ const UserForm = ({
                 className={inputClass('password')}
                 placeholder={
                   editingUser
-                    ? 'Kosongkan jika tidak ingin mengubah password'
-                    : 'Masukkan password'
+                    ? 'Kosongkan apabila tidak mengubah Password'
+                    : 'Masukkan Password'
                 }
                 value={form.password || ''}
                 onChange={(e) =>
@@ -242,7 +242,7 @@ const UserForm = ({
 
         {!editingUser && (
           <div className="field">
-            <label>Upload Foto (Bisa lebih dari 1)</label>
+            <label>Upload Foto (Dapat lebih dari 1 foto)</label>
             <input
               type="file"
               name="files"

@@ -48,7 +48,7 @@ const JadwalForm = ({
 
   return (
     <Dialog
-      header={editing ? 'Edit Jadwal' : 'Tambah Jadwal'}
+      header={editing ? 'Edit Jadwal Praktikum' : 'Tambah Jadwal Praktikum'}
       visible={visible}
       onHide={onHide}
       style={{ width: '40vw' }}
@@ -67,7 +67,7 @@ const JadwalForm = ({
             value={form.kode || ''}
             onChange={(e) => setForm({ ...form, kode: e.target.value })}
             className="w-full mt-2"
-            placeholder="Masukkan kode (opsional)"
+            placeholder="Masukkan Kode (Opsional)"
           />
         </div>
 
@@ -77,7 +77,7 @@ const JadwalForm = ({
             value={form.nama || ''}
             onChange={(e) => setForm({ ...form, nama: e.target.value })}
             className={inputClass('nama')}
-            placeholder="Masukkan nama mata kuliah"
+            placeholder="Masukkan Nama Mata Kuliah"
           />
           {errors?.nama && <small className="p-error">{errors.nama}</small>}
         </div>
@@ -90,7 +90,7 @@ const JadwalForm = ({
             optionLabel="nama"
             optionValue="id"
             onChange={handleDosenChange}
-            placeholder="Pilih dosen"
+            placeholder="Pilih Dosen"
             filter
             showClear
             className={dropdownClass('dosen_user_id')}
@@ -113,12 +113,12 @@ const JadwalForm = ({
         </div>
 
         <div>
-          <label>Prodi</label>
+          <label>Program Studi</label>
           <InputText
             value={form.prodi || ''}
             onChange={(e) => setForm({ ...form, prodi: e.target.value })}
             className={inputClass('prodi')}
-            placeholder="Masukkan prodi"
+            placeholder="Masukkan Program Studi"
           />
           {errors?.prodi && <small className="p-error">{errors.prodi}</small>}
         </div>
@@ -129,7 +129,7 @@ const JadwalForm = ({
             value={form.kelas || ''}
             onChange={(e) => setForm({ ...form, kelas: e.target.value })}
             className={inputClass('kelas')}
-            placeholder="Masukkan kelas"
+            placeholder="Masukkan Kelas"
           />
           {errors?.kelas && <small className="p-error">{errors.kelas}</small>}
         </div>

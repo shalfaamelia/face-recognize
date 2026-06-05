@@ -54,30 +54,66 @@ export default function AdjustPrintMarginLaporan({
     }));
   };
 
-  const addHeader = (doc, title, marginLeft, marginTop, marginRight) => {
+  const addHeader = (doc, title, marginLeft, marginTop, marginRight, totalData) => {
     const pageWidth = doc.internal.pageSize.width;
+    const contentWidth = pageWidth - marginLeft - marginRight;
 
-    doc.setFontSize(14);
+    // Banner header background
+    doc.setFillColor(15, 52, 96);
+    doc.rect(marginLeft, marginTop, contentWidth, 22, 'F');
+
+    // Accent bar kiri
+    doc.setFillColor(52, 152, 219);
+    doc.rect(marginLeft, marginTop, 4, 22, 'F');
+
+    // Judul utama
+    doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 0, 0);
-    doc.text(title, pageWidth / 2, marginTop + 29, {
-      align: 'center',
-    });
+    doc.setTextColor(255, 255, 255);
+    doc.text(title, marginLeft + 10, marginTop + 10);
 
+    // Subjudul
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(180, 210, 240);
+    doc.text('Smart Access', marginLeft + 10, marginTop + 17);
+
+    // Info tanggal di kanan banner
     const today = new Date().toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+      day: 'numeric', month: 'long', year: 'numeric',
     });
+    doc.setFontSize(8);
+    doc.setTextColor(180, 210, 240);
+    doc.text(`Dicetak: ${today}`, pageWidth - marginRight - 2, marginTop + 10, { align: 'right' });
+    doc.text(`Total Data: ${totalData} data`, pageWidth - marginRight - 2, marginTop + 17, { align: 'right' });
 
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Dicetak: ${today}`, marginLeft, marginTop + 37, {
-      align: 'left',
-    });
+    // Garis bawah accent
+    doc.setDrawColor(52, 152, 219);
+    doc.setLineWidth(0.8);
+    doc.line(marginLeft, marginTop + 24, pageWidth - marginRight, marginTop + 24);
 
-    return marginTop + 43;
+    return marginTop + 29;
+  };
+
+  const addFooter = (doc, marginLeft, marginRight, marginBottom) => {
+    const pageCount = doc.internal.getNumberOfPages();
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      const footerY = pageHeight - marginBottom + 4;
+
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.3);
+      doc.line(marginLeft, footerY - 2, pageWidth - marginRight, footerY - 2);
+
+      doc.setFontSize(7.5);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(130, 130, 130);
+      doc.text('Smart Access — Dokumen ini dicetak secara otomatis', marginLeft, footerY + 3);
+      doc.text(`Halaman ${i} dari ${pageCount}`, pageWidth - marginRight, footerY + 3, { align: 'right' });
+    }
   };
 
   const exportPDF = async (adjustConfig) => {
@@ -93,17 +129,16 @@ export default function AdjustPrintMarginLaporan({
     const marginBottom = parseFloat(adjustConfig.marginBottom);
 
     const startY = addHeader(
-      doc,
-      'LAPORAN AKSES LAB',
-      marginLeft,
-      marginTop,
-      marginRight
+      doc, 'LAPORAN AKSES LAB',
+      marginLeft, marginTop, marginRight,
+      dataLaporanAkses.length
     );
 
     autoTable(doc, {
       startY,
-      head: [['Kode', 'Nama', 'NIM', 'Prodi', 'Kelas', 'Waktu Akses']],
-      body: dataLaporanAkses.map((item) => [
+      head: [['No', 'Kode', 'Nama', 'NIM', 'Prodi', 'Kelas', 'Waktu Akses']],
+      body: dataLaporanAkses.map((item, i) => [
+        i + 1,
         item.kode || '-',
         item.nama || '-',
         item.nim || '-',
@@ -111,23 +146,30 @@ export default function AdjustPrintMarginLaporan({
         item.kelas || '-',
         item.masuk || '-',
       ]),
-      margin: {
-        left: marginLeft,
-        right: marginRight,
-        bottom: marginBottom,
-      },
+      margin: { left: marginLeft, right: marginRight, bottom: marginBottom + 8 },
       styles: {
-        fontSize: 9,
-        cellPadding: 2,
+        fontSize: 8.5,
+        cellPadding: { top: 3, bottom: 3, left: 3, right: 3 },
+        lineColor: [220, 230, 240],
+        lineWidth: 0.3,
       },
       headStyles: {
-        fillColor: [41, 128, 185],
-        textColor: 255,
+        fillColor: [15, 52, 96],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 9,
+        cellPadding: { top: 4, bottom: 4, left: 3, right: 3 },
       },
       alternateRowStyles: {
-        fillColor: [248, 249, 250],
+        fillColor: [240, 247, 255],
       },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 10 },
+      },
+      didDrawPage: () => { },
     });
+
+    addFooter(doc, marginLeft, marginRight, marginBottom);
 
     return doc.output('datauristring');
   };

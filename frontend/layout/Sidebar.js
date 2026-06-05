@@ -13,8 +13,8 @@ const navItems = [
       { href: '/user', icon: 'pi-users', label: 'Pengguna', roles: ['kepala_lab'] },
       { href: '/jadwal', icon: 'pi-calendar', label: 'Jadwal Praktikum', roles: ['kepala_lab', 'teknisi'] },
       { href: '/monitoring', icon: 'pi-eye', label: 'Monitoring', roles: ['kepala_lab', 'teknisi', 'sarpras', 'dosen'] },
-      { href: '/peminjaman_lab', icon: 'pi-calendar-plus', label: 'Peminjaman Lab', roles: ['kepala_lab', 'teknisi'] },
-      { href: '/ajuan_barang', icon: 'pi-box', label: 'Ajuan Barang Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
+      { href: '/peminjaman_lab', icon: 'pi-calendar-plus', label: ' Pengajuan Peminjaman Lab', roles: ['kepala_lab', 'teknisi'] },
+      { href: '/ajuan_barang', icon: 'pi-box', label: 'Pengajuan Laporan Barang Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
       {
         href: '/laporan',
         icon: 'pi-file',
