@@ -3,11 +3,13 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import 'primeflex/primeflex.css';
 import './global.css';
-
 import { AuthProvider } from './components/authProvider';
 
 export const metadata = {
   title: 'SmartAccess',
+  icons: {
+    icon: '/favicon.svg',
+  },
   description: 'Smart Access Control',
 };
 

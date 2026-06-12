@@ -198,8 +198,8 @@ export default function Page() {
     } else if (form.role !== 'mahasiswa') {
       if (!nipValue) {
         newErrors.nip = 'NIP harus diisi';
-      } else if (!/^\d{10,20}$/.test(nipValue)) {
-        newErrors.nip = 'NIP harus berupa angka 10-20 digit';
+      } else if (!/^\d{10,18}$/.test(nipValue)) {
+        newErrors.nip = 'NIP harus berupa angka 10-18 digit';
       }
       if (!form.email?.trim()) newErrors.email = 'Email harus diisi';
       if (!editingUser && !form.password?.trim()) {
@@ -240,7 +240,7 @@ export default function Page() {
       <ConfirmDialog />
       <div className="mb-3">
         <h3 className="text-xl font-semibold" style={{ margin: '0 0 0.2rem 0' }}>
-          Manajemen User
+          Manajemen Pengguna
         </h3>
 
         <div

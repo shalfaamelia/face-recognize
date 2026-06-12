@@ -117,7 +117,7 @@ export default function Page() {
           className="text-xl font-semibold"
           style={{ margin: '0 0 1.25rem 0' }}
         >
-          Laporan Barang Lab
+          Laporan Barang di Laboratorium
         </h3>
 
         <div

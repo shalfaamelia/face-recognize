@@ -35,7 +35,12 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
     const newErrors = {};
     if (!formData.nama.trim()) newErrors.nama = 'Nama wajib diisi';
 
-    if (!formData.nip.trim()) newErrors.nip = 'NIP wajib diisi';
+    if (!formData.nip.trim()) {
+      newErrors.nip = 'NIP wajib diisi';
+    } else if (!/^\d{10,18}$/.test(formData.nip.trim())) {
+      newErrors.nip = 'NIP harus berupa angka 10-18 digit';
+    }
+
     if (!formData.email.trim()) newErrors.email = 'Email wajib diisi';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
       newErrors.email = 'Format email tidak valid';
@@ -167,9 +172,13 @@ const ProfileForm = ({ profile, onUpdate, toastRef }) => {
                     <label className="edit-label">NIP <span>*</span></label>
                     <InputText
                       value={formData.nip}
-                      onChange={(e) => handleInputChange('nip', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange('nip', e.target.value.replace(/\D/g, '').slice(0, 18))
+                      }
                       className={`w-full${errors.nip ? ' p-invalid' : ''}`}
                       placeholder="Masukkan NIP"
+                      keyfilter="int"
+                      maxLength={18}
                     />
                     {errors.nip && <small className="p-error">{errors.nip}</small>}
                   </div>

@@ -26,6 +26,7 @@ export default function MainLayout({ children }) {
         <div
           className="flex flex-column flex-1"
           style={{
+            marginLeft: `${collapsed ? '64px' : '240px'}`,
             overflowY: 'auto',
             minHeight: 'calc(100vh - 64px)',
           }}

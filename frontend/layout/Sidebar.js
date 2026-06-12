@@ -13,17 +13,17 @@ const navItems = [
       { href: '/user', icon: 'pi-users', label: 'Pengguna', roles: ['kepala_lab'] },
       { href: '/jadwal', icon: 'pi-calendar', label: 'Jadwal Praktikum', roles: ['kepala_lab', 'teknisi'] },
       { href: '/monitoring', icon: 'pi-eye', label: 'Monitoring', roles: ['kepala_lab', 'teknisi', 'sarpras', 'dosen'] },
-      { href: '/peminjaman_lab', icon: 'pi-calendar-plus', label: ' Pengajuan Peminjaman Lab', roles: ['kepala_lab', 'teknisi'] },
-      { href: '/ajuan_barang', icon: 'pi-box', label: 'Pengajuan Laporan Barang Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
+      { href: '/peminjaman_lab', icon: 'pi-calendar-plus', label: ' Pengajuan Peminjaman Laboratorium', roles: ['kepala_lab', 'teknisi'] },
+      { href: '/ajuan_barang', icon: 'pi-box', label: 'Pengajuan Laporan Barang di Laboratorium', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
       {
         href: '/laporan',
         icon: 'pi-file',
         label: 'Laporan',
         roles: ['kepala_lab', 'teknisi', 'sarpras', 'dosen'],
         children: [
-          { href: '/laporan/akses', icon: 'pi-key', label: 'Laporan Akses Lab', roles: ['kepala_lab', 'teknisi', 'sarpras', 'dosen'] },
-          { href: '/laporan/peminjaman', icon: 'pi-book', label: 'Laporan Peminjaman Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
-          { href: '/laporan/barang', icon: 'pi-box', label: 'Laporan Barang Lab', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
+          { href: '/laporan/akses', icon: 'pi-key', label: 'Laporan Akses Laboratorium', roles: ['kepala_lab', 'teknisi', 'sarpras', 'dosen'] },
+          { href: '/laporan/peminjaman', icon: 'pi-book', label: 'Laporan Peminjaman Laboratorium', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
+          { href: '/laporan/barang', icon: 'pi-box', label: 'Laporan Barang di Laboratorium', roles: ['kepala_lab', 'teknisi', 'sarpras'] },
         ],
       },
     ],
@@ -131,9 +131,13 @@ export default function Sidebar({ collapsed, mobileVisible, setMobileVisible }) 
     <>
       <div
         style={{
+          position: 'fixed',
+          left: 0,
+          top: '64px',
           width: collapsed ? '64px' : '240px',
+          height: 'calc(100vh - 64px)',
           transition: 'width 0.25s cubic-bezier(0.4,0,0.2,1)',
-          flexShrink: 0,
+          zIndex: 40,
           display: 'none',
           flexDirection: 'column',
         }}

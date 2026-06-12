@@ -112,7 +112,7 @@ export default function Page() {
       <ConfirmDialog />
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
-        <h3 className="text-xl font-semibold">Manajemen Peminjaman Lab</h3>
+        <h3 className="text-xl font-semibold">Manajemen Pengajuan Peminjaman Laboratorium</h3>
 
         <div className="flex flex-col md:flex-row gap-2 md:items-center md:ml-auto">
           <HeaderBar
